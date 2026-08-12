@@ -353,6 +353,57 @@ it loads; it never changes what the content says. Layer 2 decides what is true a
 never assumes a file layout. A re-run that changes the target agent therefore rewrites Layer 1 only
 — which is exactly what makes C11's migration safe, since Layer 2 moves across unchanged.
 
+### C13 — Rules directories: shape, and forward routing
+
+Whenever the skill generates a rules directory (`.claude/rules/` for Claude Code, `.agents/rules/`
+for Antigravity), it must also specify how rules are *added later*. Creating the structure without
+the routing guarantees it decays: the next agent puts every new rule in the content file and the
+directory goes vestigial.
+
+Offering the mechanism stays conditional. Specifying its shape, once offered, does not.
+
+**The routing becomes a three-way decision**, recorded in the content file so it governs every
+future rule:
+
+```markdown
+## Maintaining these docs
+- **Critical rules → this file**, never `.claude/rules/`. Path-scoped rules don't survive `/compact`.
+- **Rules that apply only to certain paths → `.claude/rules/<topic>.md`**, one topic per file, with
+  `paths:` frontmatter.
+- **Everything else → this file.**
+- New decisions → `docs/decisions.md` (append-only). Business rules → `docs/product.md`.
+```
+
+The first line is the one that matters. It is not a style preference — a critical rule placed in a
+path-scoped file silently disappears after compaction until Claude next reads a matching file.
+
+**`.claude/rules/<topic>.md` skeleton:**
+
+```markdown
+---
+paths:
+  - "src/api/**/*.ts"
+---
+
+# [Topic] rules
+
+- [Rule that applies only to files matching the paths above]
+```
+
+Three failure modes the skeleton has to prevent, all silent:
+
+- **Omitting `paths` doesn't error** — it makes the rule load every session at the same priority as
+  the content file. If that's the intent, the rule belongs in the content file instead.
+- **An invalid `[`** that can't be read as a bracket expression matches nothing. Escape a literal
+  bracket as `\[`.
+- **Brace expansion multiplies.** A rule's whole `paths` list shares a budget of 1,000 expanded
+  patterns; a pattern that exceeds it is used unexpanded and its literal braces match no files.
+
+**`.agents/rules/<topic>.md` (Antigravity):** verified facts are the location and the 12,000-character
+per-file limit. Per-file path-scoping syntax was **not** verified. Ship plain markdown rule files,
+one topic each, and if path scoping is wanted, verify the frontmatter syntax against Antigravity's
+docs first rather than assuming Claude Code's `paths:` field transfers. Do not invent frontmatter.
+
 ## Files touched
 
 | File | Change |

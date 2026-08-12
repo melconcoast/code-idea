@@ -16,7 +16,7 @@
 - Every per-agent claim carries a **source URL and a verified-on date**. Anything not citable is left out, not guessed.
 - Layer 2 output must be byte-identical across two runs targeting different agents.
 - Agent facts are verified as of **2026-08-12**.
-- Spec: `docs/superpowers/specs/2026-08-12-reconfirmation-deferred-decisions-agent-adapters-design.md`. Change IDs below (C1–C12) refer to it.
+- Spec: `docs/superpowers/specs/2026-08-12-reconfirmation-deferred-decisions-agent-adapters-design.md`. Change IDs below (C1–C13) refer to it.
 - Version for this release is **1.2.0**.
 
 ---
@@ -30,7 +30,7 @@ Write the tests first. This repo has no runner, so a "test" is a fixture plan pl
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: scenario IDs `S1`–`S17`, referenced by every later task's verification step.
+- Produces: scenario IDs `S1`–`S21`, referenced by every later task's verification step.
 
 - [ ] **Step 1: Create the scenarios file**
 
@@ -83,6 +83,15 @@ Fixture A, run a second time against a repo that already contains `AGENTS.md`, `
 | S16 | Fixture A, target = Antigravity alone | Content in `AGENTS.md` | A `GEMINI.md`, or any `CLAUDE.md` |
 | S17 | Fixture A, target = Antigravity, repo already has `GEMINI.md` | Content written into the existing `GEMINI.md` | A second root rules file alongside it |
 
+## Rules-directory scenarios
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S18 | Fixture B, Claude-native, path-scoped conventions per subsystem | `.claude/rules/<topic>.md` with a valid `paths:` frontmatter, one topic per file | A rules file with no `paths` field |
+| S19 | S18's output | Three-way routing rule in the content file naming `.claude/rules/` for path-scoped rules | Routing that sends all future rules to the content file |
+| S20 | Fixture A, Claude-native, no path-scoped content | No `.claude/rules/` directory; no three-way routing lines | An empty rules directory, or routing pointing at a folder that doesn't exist |
+| S21 | Fixture B, Antigravity-native | `.agents/rules/<topic>.md` as plain markdown under 12,000 chars | Any `paths:` frontmatter — that syntax is unverified for Antigravity |
+
 ## Convention scenarios
 
 | ID | Setup | Must produce | Must NOT produce |
@@ -103,7 +112,7 @@ Expected: S1, S2, S3 all fail — the current skill regenerates without announci
 git add examples/test-scenarios.md
 git commit -m "test: add scenario fixtures for v1.2.0 changes
 
-Seventeen scenarios covering re-run confirmation, deferred decisions,
+Twenty-one scenarios covering re-run confirmation, deferred decisions,
 per-agent layouts, and layer separation. S1-S3 currently fail against
 v1.1.0, which is the defect this release fixes."
 ```
@@ -350,6 +359,19 @@ Claude Code native mode adds one line, because auto memory is machine-local and 
 - If something useful landed in auto memory (`/memory`), promote it here so the team gets it.
 ```
 
+When a rules directory was generated, the routing becomes a three-way decision so every *future*
+rule follows the structure instead of defaulting back into the content file:
+
+```markdown
+- **Critical rules → this file**, never `.claude/rules/`. Path-scoped rules don't survive `/compact`.
+- **Rules that apply only to certain paths → `.claude/rules/<topic>.md`**, one topic per file, with
+  `paths:` frontmatter.
+- **Everything else → this file.**
+```
+
+Omit these three lines entirely when no rules directory exists — they'd point at a folder that isn't
+there.
+
 Portable mode (two or more agents, or generic) adds the loader routing:
 
 ```markdown
@@ -410,6 +432,58 @@ When it's decided later, append a **new** dated entry with `Status: Accepted` th
 one, and remove the matching item from the content file's Pending decisions section. Never edit the
 pending entry in place — the log stays append-only.
 ```
+
+- [ ] **Step 5b: Add the rules-directory skeletons (C13)**
+
+Add a new section after the CLAUDE.md section:
+
+````markdown
+## Rules directories (only when a rules directory is warranted)
+
+Generated only when there's genuinely path-scoped content — a monorepo, or a subsystem with distinct
+conventions. When one is generated, the content file's `## Maintaining these docs` section **must**
+carry the three-way routing rule, or the next rule added goes into the content file and the
+directory goes vestigial.
+
+### `.claude/rules/<topic>.md` (Claude Code)
+
+One topic per file, named for the topic — `api.md`, `testing.md`, `migrations.md`:
+
+```markdown
+---
+paths:
+  - "src/api/**/*.ts"
+---
+
+# [Topic] rules
+
+- [Rule that applies only to files matching the paths above]
+```
+
+Three failure modes to avoid, all of them silent:
+
+- **Omitting `paths` doesn't error.** It makes the rule load every session at the same priority as
+  the content file. If that's what's wanted, put the rule in the content file instead — a rules file
+  with no `paths` is just a confusing way to write a global rule.
+- **An invalid `[`** that can't be parsed as a bracket expression matches nothing, so the rule never
+  fires. Escape a literal bracket as `\[`.
+- **Brace expansion multiplies.** A rule's whole `paths` list shares a budget of 1,000 expanded
+  patterns; `{a,b}/{c,d}/*.{ts,tsx}` is already 8. A pattern over budget is used unexpanded and its
+  literal braces match no files.
+
+Never put a critical rule here. Path-scoped rules are not re-injected after `/compact` — they reload
+only when Claude next reads a matching file, so a critical rule placed here silently vanishes
+mid-session.
+
+### `.agents/rules/<topic>.md` (Antigravity)
+
+Plain markdown, one topic per file, 12,000 characters maximum per file.
+
+**Do not add `paths:` frontmatter here.** The location and the size limit are verified; per-file
+path-scoping syntax is not. Claude Code's `paths:` field is not known to transfer. If path scoping is
+wanted, verify the syntax against Antigravity's own docs first and add it to `agent-profiles.md` with
+a source — don't infer it from the Claude Code section of this file.
+````
 
 - [ ] **Step 6: Add the `docs/conventions.md` skeleton**
 
@@ -1134,7 +1208,7 @@ Prepend to `CHANGELOG.md`:
 - **Per-agent layouts.** One named agent gets its native format: `CLAUDE.md` for Claude Code (which never reads `AGENTS.md`), `AGENTS.md` for Codex and Antigravity (which read it natively). Two or more agents, or a generic target, gets the portable layout — `AGENTS.md` plus a `CLAUDE.md` loader. Changing the target on a re-run migrates the existing files rather than orphaning them.
 - `references/agent-profiles.md` — per-agent container facts, each with a source URL and verified-on date. Expected to age; verify before trusting.
 - `docs/conventions.md` as a generated candidate for naming and structural rules beyond linter defaults, with matching defaults in `recommendation-heuristics.md`.
-- `examples/test-scenarios.md` — seventeen scenarios a change must be checked against, including "must NOT produce" cases.
+- `examples/test-scenarios.md` — twenty-one scenarios a change must be checked against, including "must NOT produce" cases.
 - A `## Maintaining these docs` routing rule in generated output, so mid-project updates land in the content file rather than fragmenting across it and the loader, and so useful notes captured in Claude Code's machine-local auto memory get promoted where the team can see them.
 
 ### Changed
@@ -1167,11 +1241,11 @@ Every prior task verified its own scenarios in isolation. This runs them togethe
 
 **Files:** none — verification only.
 
-- [ ] **Step 1: Run all seventeen scenarios**
+- [ ] **Step 1: Run all twenty-one scenarios**
 
 Work through `examples/test-scenarios.md` end to end against the current `SKILL.md`. Record pass/fail per scenario.
 
-Expected: all seventeen pass, including every "must NOT produce" column.
+Expected: all twenty-one pass, including every "must NOT produce" column.
 
 - [ ] **Step 2: Re-check the line ceiling**
 
@@ -1205,10 +1279,10 @@ Report results honestly, including any scenario that failed and why. A failing s
 
 ## Self-review
 
-**Spec coverage:** C1 → Task 7. C2 → Task 7. C3 → Task 8. C4 → Tasks 3, 8. C5 → Tasks 3, 9, 11. C6 → Task 9. C7 → Tasks 6, 9. C8 → Tasks 3, 12. C9 → Tasks 4, 6. C10 → Task 2. C11 → Task 9. C12 → Tasks 2, 3, 4, 5, 9. Every change ID has at least one task.
+**Spec coverage:** C1 → Task 7. C2 → Task 7. C3 → Task 8. C4 → Tasks 3, 8. C5 → Tasks 3, 9, 11. C6 → Task 9. C7 → Tasks 6, 9. C8 → Tasks 3, 12. C9 → Tasks 4, 6. C10 → Task 2. C11 → Task 9. C12 → Tasks 2, 3, 4, 5, 9. C13 → Task 3 (Steps 3 and 5b), tested by S18–S21. Every change ID has at least one task.
 
-**Known gap, deliberately left:** the spec's C7 mentions offering `.claude/rules/` in Claude-native mode. Task 9's Step 3 table says "only if genuinely path-scoped content exists," but no task writes a `.claude/rules/` skeleton into `templates.md`. This is intentional — it's an offer the skill makes conversationally, and a skeleton would imply it's a default. If execution finds the skill generating malformed rules files, add the skeleton to `templates.md` as a follow-up.
+**Closed gap:** an earlier draft left `.claude/rules/` without a skeleton, reasoning that shipping one would imply it was a default. That conflated two separate questions — whether to *offer* the mechanism (conditional) and whether to *specify its shape and forward routing* once offered (mandatory). Without the latter, a generated rules directory decays on the next rule added, and a malformed `paths:` frontmatter fails silently rather than erroring. C13 closes it: Task 3 Step 5b adds both skeletons, Task 3 Step 3 adds the three-way routing, and S18–S21 test that it fires only when warranted.
 
 **Placeholder scan:** clean. Task 2's source URLs were placeholders in the first draft pending primary-doc verification; that verification was completed on 2026-08-12 and the real URLs are now inline. Task 2 Step 3 keeps a grep guard against the three claims that failed verification, so a future edit can't quietly reintroduce them from an older draft.
 
-**Consistency:** `## Pending decisions — do not resolve these yourself` and `**Status:** Pending` are used identically across Tasks 3, 8, 9, 11, 12, and 13. Scenario IDs S1–S17 are consistent between Task 1 and the tasks that reference them.
+**Consistency:** `## Pending decisions — do not resolve these yourself` and `**Status:** Pending` are used identically across Tasks 3, 8, 9, 11, 12, and 13. Scenario IDs S1–S21 are consistent between Task 1 and the tasks that reference them.
