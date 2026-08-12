@@ -197,12 +197,14 @@ a source — don't infer it from the Claude Code section of this file.
 
 A deferred decision is recorded the same way, with no rationale yet and the options still open:
 
+```markdown
 ## [YYYY-MM-DD] — [Decision title]
 **Decision:** Deferred. Not yet decided.
 **Options on the table:** [The candidates, including the one that would have been recommended]
 **Why deferred:** [One line — e.g. "doesn't block the first slice of work"]
 **Meanwhile:** [What an agent should do until this is settled]
 **Status:** Pending
+```
 
 When it's decided later, append a **new** dated entry with `Status: Accepted` that supersedes this
 one, and remove the matching item from the content file's Pending decisions section. Never edit the
