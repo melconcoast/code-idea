@@ -1,0 +1,44 @@
+name: Package and release skill
+
+# Runs whenever a version tag (v1.0.0, v1.2.3, etc.) is pushed.
+# Packages SKILL.md + references/ into a .skill file (a zip with the
+# skill folder at its root) and attaches it to a GitHub Release.
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+env:
+  SKILL_NAME: code-idea
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate SKILL.md has required frontmatter
+        run: |
+          head -n 5 SKILL.md | grep -q '^name:' || (echo "SKILL.md is missing a 'name' field in its frontmatter" && exit 1)
+          head -n 5 SKILL.md | grep -q '^description:' || (echo "SKILL.md is missing a 'description' field in its frontmatter" && exit 1)
+
+      - name: Package skill
+        run: |
+          mkdir -p "dist/${SKILL_NAME}"
+          cp SKILL.md "dist/${SKILL_NAME}/"
+          cp -r references "dist/${SKILL_NAME}/"
+          cd dist
+          zip -rq "../${SKILL_NAME}.skill" "${SKILL_NAME}"
+          cd ..
+          ls -la "${SKILL_NAME}.skill"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ github.workspace }}/${{ env.SKILL_NAME }}.skill
+          generate_release_notes: true

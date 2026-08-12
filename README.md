@@ -1,4 +1,4 @@
-# context-scaffolder
+# code-idea
 
 A Claude Skill that turns a project plan, idea, or planning conversation into a complete, AI-coding-agent-ready documentation set — a lean root `AGENTS.md` plus linked docs (architecture, decisions, roadmap, product, design-system), and, for monorepos, nested per-subsystem context files.
 
