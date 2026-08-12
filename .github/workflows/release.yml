@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Validate SKILL.md has required frontmatter
         run: |
@@ -38,7 +38,7 @@ jobs:
           ls -la "${SKILL_NAME}.skill"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: ${{ github.workspace }}/${{ env.SKILL_NAME }}.skill
           generate_release_notes: true
