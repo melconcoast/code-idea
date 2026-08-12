@@ -434,6 +434,53 @@ rule currently sits at the bottom. The skill's own philosophy is that agents los
 buried later in a file — a rule about how to edit a doc has to be read *before* the edit, and a
 footer is exactly what a targeted edit skips.
 
+### C15 — Never write secrets into generated files
+
+Generated context files are committed and team-shared. The skill's input is a planning conversation,
+which routinely contains internal hostnames, connection strings, tokens pasted while debugging, or
+real customer data used as an example. Step 1 currently says "extract it directly," with no exception.
+
+Rule, in Step 1 (extraction) and Step 4 (drafting):
+
+> Never write a credential, token, connection string, private hostname, or real customer data into a
+> generated file, even when it appears in the plan. Substitute a named reference (`DATABASE_URL`,
+> `<internal-host>`), and if the value's *shape* matters to an implementer, describe the shape in
+> `docs/product.md` rather than reproducing the value.
+
+This is deliberately a hard rule with no confirm-and-override path. A user saying "it's fine, include
+it" is not a reason to commit a credential to a repo — offer the named-reference form instead.
+
+### C16 — Verify the skill still triggers
+
+C7 rewrites the frontmatter `description`, which is the entire mechanism by which the skill fires. A
+degraded description makes every other change in this release unreachable, and nothing currently
+tests for it. Preserving the trigger phrases verbatim is necessary but not sufficient — "the phrase
+is present" is not "the skill fires."
+
+Add trigger scenarios covering several real phrasings plus a negative case: a user asking how
+`AGENTS.md` works *in the abstract* should get an explanation, not a scaffold. This is the first
+check to run after any description edit.
+
+### C17 — Verify internal links resolve
+
+The root file's `## Related docs` section links to `docs/*.md`, all of which are conditional — and
+this release makes them more so: `conventions.md` only when conventions exceed linter defaults, and
+`design-system.md` **deliberately absent** when the theme is deferred (C4). The most likely first-run
+output is therefore a root file linking to a design-system doc that intentionally doesn't exist.
+
+Step 5 verifies every internal link resolves to a file that was actually generated, and drops the
+line rather than shipping a dead link.
+
+### C18 — Measure output against the target agent's limit
+
+`agent-profiles.md` records the limits — ~200 lines for Claude Code, 32 KiB for Codex — but nothing
+checks the generated output against the limit of the agent it was generated for. The skill enforces a
+line ceiling on itself and not on its product.
+
+Step 5 reports the root file's size against the strictest limit across the selected agents, and warns
+at a threshold rather than at the limit. This matters most for Codex, where exceeding 32 KiB doesn't
+error: it silently stops adding files, dropping the deepest and most specific nested guidance first.
+
 ## Files touched
 
 | File | Change |
