@@ -16,7 +16,7 @@
 - Every per-agent claim carries a **source URL and a verified-on date**. Anything not citable is left out, not guessed.
 - Layer 2 output must be byte-identical across two runs targeting different agents.
 - Agent facts are verified as of **2026-08-12**.
-- Spec: `docs/superpowers/specs/2026-08-12-reconfirmation-deferred-decisions-agent-adapters-design.md`. Change IDs below (C1–C13) refer to it.
+- Spec: `docs/superpowers/specs/2026-08-12-reconfirmation-deferred-decisions-agent-adapters-design.md`. Change IDs below (C1-C14) refer to it.
 - Version for this release is **1.2.0**.
 
 ---
@@ -30,7 +30,7 @@ Write the tests first. This repo has no runner, so a "test" is a fixture plan pl
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: scenario IDs `S1`–`S21`, referenced by every later task's verification step.
+- Produces: scenario IDs `S1`-`S24`, referenced by every later task's verification step.
 
 - [ ] **Step 1: Create the scenarios file**
 
@@ -92,6 +92,14 @@ Fixture A, run a second time against a repo that already contains `AGENTS.md`, `
 | S20 | Fixture A, Claude-native, no path-scoped content | No `.claude/rules/` directory; no three-way routing lines | An empty rules directory, or routing pointing at a folder that doesn't exist |
 | S21 | Fixture B, Antigravity-native | `.agents/rules/<topic>.md` as plain markdown under 12,000 chars | Any `paths:` frontmatter — that syntax is unverified for Antigravity |
 
+## Doc-structure scenarios
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S22 | Any run generating `docs/*.md` | Every generated doc carries its extension rule directly under the H1 | A doc with no extension rule; a rule in a footer |
+| S23 | S22's output | The rule is a single italic line | A `## Maintaining` section inside a `docs/*.md` file |
+| S24 | Fixture A, user defers the theme | `decisions.md` extension rule present even though the only entry is `Status: Pending` | A pending-only decisions log with no append-only rule |
+
 ## Convention scenarios
 
 | ID | Setup | Must produce | Must NOT produce |
@@ -112,7 +120,7 @@ Expected: S1, S2, S3 all fail — the current skill regenerates without announci
 git add examples/test-scenarios.md
 git commit -m "test: add scenario fixtures for v1.2.0 changes
 
-Twenty-one scenarios covering re-run confirmation, deferred decisions,
+Twenty-four scenarios covering re-run confirmation, deferred decisions,
 per-agent layouts, and layer separation. S1-S3 currently fail against
 v1.1.0, which is the defect this release fixes."
 ```
@@ -513,7 +521,40 @@ enforces. A project with nothing but tooling defaults keeps a thin `## Code styl
 content file and gets no separate doc — same rule as every other optional file.
 ````
 
+- [ ] **Step 6b: Give every doc skeleton its extension rule (C14)**
+
+Add one italic line directly under the `# H1` of each `docs/*.md` skeleton. One line, never a section — a maintenance block per doc would bloat the set the skill exists to keep lean.
+
+| Skeleton | Line to add under the H1 |
+|---|---|
+| `decisions.md` | `*Append-only. Add a new dated entry; never edit or delete a past one. To reverse a decision, add an entry that supersedes it.*` |
+| `architecture.md` | `*Update in the same change as any real design shift. Delete a section you can't keep current — a stale one misleads more than none.*` |
+| `product.md` | `*Current state, not history. Edit rules in place; the reasoning behind a change goes in `decisions.md`.*` |
+| `roadmap.md` | `*Move items between sections rather than deleting them — a deleted "deferred" item loses the record that it was deliberately not built.*` |
+| `design-system.md` | `*Every token needs its semantic meaning — what it's reserved for, not just its value. Don't add one without saying when to use it.*` |
+| `conventions.md` | `*Add a rule only if a linter or formatter doesn't already enforce it, and give each rule a concrete example.*` |
+
+Three of these replace prose that already exists elsewhere in the skeleton — fold, don't duplicate:
+- `decisions.md`'s current "Append-only. Each entry is dated and never rewritten…" preamble.
+- `architecture.md`'s current keep-in-sync **footer** — this moves to the top. A rule about how to edit a doc has to be read before the edit, and a footer is exactly what a targeted edit skips.
+- `product.md`'s current "Current-state business and feature rules…" preamble.
+
 - [ ] **Step 7: Verify**
+
+Every doc skeleton has an extension rule, and none grew a maintenance section:
+
+```bash
+grep -c "^\*.*\*$" references/templates.md
+```
+
+Expected: `6` — one italic extension line per doc skeleton.
+
+```bash
+grep -n "^---$" references/templates.md | tail -1
+grep -n "Keep this file in sync" references/templates.md
+```
+
+Expected: the keep-in-sync line no longer appears at the end of the `architecture.md` skeleton — it moved under the H1.
 
 ```bash
 grep -c "Pending" references/templates.md
@@ -1208,7 +1249,7 @@ Prepend to `CHANGELOG.md`:
 - **Per-agent layouts.** One named agent gets its native format: `CLAUDE.md` for Claude Code (which never reads `AGENTS.md`), `AGENTS.md` for Codex and Antigravity (which read it natively). Two or more agents, or a generic target, gets the portable layout — `AGENTS.md` plus a `CLAUDE.md` loader. Changing the target on a re-run migrates the existing files rather than orphaning them.
 - `references/agent-profiles.md` — per-agent container facts, each with a source URL and verified-on date. Expected to age; verify before trusting.
 - `docs/conventions.md` as a generated candidate for naming and structural rules beyond linter defaults, with matching defaults in `recommendation-heuristics.md`.
-- `examples/test-scenarios.md` — twenty-one scenarios a change must be checked against, including "must NOT produce" cases.
+- `examples/test-scenarios.md` — twenty-four scenarios a change must be checked against, including "must NOT produce" cases.
 - A `## Maintaining these docs` routing rule in generated output, so mid-project updates land in the content file rather than fragmenting across it and the loader, and so useful notes captured in Claude Code's machine-local auto memory get promoted where the team can see them.
 
 ### Changed
@@ -1241,11 +1282,11 @@ Every prior task verified its own scenarios in isolation. This runs them togethe
 
 **Files:** none — verification only.
 
-- [ ] **Step 1: Run all twenty-one scenarios**
+- [ ] **Step 1: Run all twenty-four scenarios**
 
 Work through `examples/test-scenarios.md` end to end against the current `SKILL.md`. Record pass/fail per scenario.
 
-Expected: all twenty-one pass, including every "must NOT produce" column.
+Expected: all twenty-four pass, including every "must NOT produce" column.
 
 - [ ] **Step 2: Re-check the line ceiling**
 
@@ -1279,7 +1320,9 @@ Report results honestly, including any scenario that failed and why. A failing s
 
 ## Self-review
 
-**Spec coverage:** C1 → Task 7. C2 → Task 7. C3 → Task 8. C4 → Tasks 3, 8. C5 → Tasks 3, 9, 11. C6 → Task 9. C7 → Tasks 6, 9. C8 → Tasks 3, 12. C9 → Tasks 4, 6. C10 → Task 2. C11 → Task 9. C12 → Tasks 2, 3, 4, 5, 9. C13 → Task 3 (Steps 3 and 5b), tested by S18–S21. Every change ID has at least one task.
+**Spec coverage:** C1 → Task 7. C2 → Task 7. C3 → Task 8. C4 → Tasks 3, 8. C5 → Tasks 3, 9, 11. C6 → Task 9. C7 → Tasks 6, 9. C8 → Tasks 3, 12. C9 → Tasks 4, 6. C10 → Task 2. C11 → Task 9. C12 → Tasks 2, 3, 4, 5, 9. C13 → Task 3 (Steps 3 and 5b), tested by S18–S21. C14 → Task 3 (Step 6b), tested by S22–S24. Every change ID has at least one task.
+
+**Structure-teaching is now uniform across both layers.** C13 makes a generated rules directory teach how rules are added to it; C14 makes every generated doc teach how it's extended. Together with C8's cross-doc routing, a scaffold answers three separate questions a future agent will otherwise guess at: which file a change belongs in, how that file is structured, and what must never go in it.
 
 **Closed gap:** an earlier draft left `.claude/rules/` without a skeleton, reasoning that shipping one would imply it was a default. That conflated two separate questions — whether to *offer* the mechanism (conditional) and whether to *specify its shape and forward routing* once offered (mandatory). Without the latter, a generated rules directory decays on the next rule added, and a malformed `paths:` frontmatter fails silently rather than erroring. C13 closes it: Task 3 Step 5b adds both skeletons, Task 3 Step 3 adds the three-way routing, and S18–S21 test that it fires only when warranted.
 

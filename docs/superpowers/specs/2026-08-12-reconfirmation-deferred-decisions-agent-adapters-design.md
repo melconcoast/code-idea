@@ -404,6 +404,36 @@ per-file limit. Per-file path-scoping syntax was **not** verified. Ship plain ma
 one topic each, and if path scoping is wanted, verify the frontmatter syntax against Antigravity's
 docs first rather than assuming Claude Code's `paths:` field transfers. Do not invent frontmatter.
 
+### C14 — Every generated doc teaches how to extend it
+
+C13 does this for rules directories. The same gap exists in Layer 2, and it's currently
+half-covered: `decisions.md` states its append-only rule, `architecture.md` has a keep-in-sync
+footer, and `product.md` says edit-in-place. `roadmap.md`, `design-system.md`, and the new
+`conventions.md` say nothing — so a future agent extending them has no structure to follow and
+invents one.
+
+C8's routing answers *which doc*. C14 answers *how to extend it once you're in it*. Both are needed;
+neither substitutes for the other.
+
+**Every generated doc carries exactly one line, directly under its `# H1`,** in italics:
+
+| Doc | Extension rule |
+|---|---|
+| `decisions.md` | *Append-only. Add a new dated entry; never edit or delete a past one. To reverse a decision, add an entry that supersedes it.* |
+| `architecture.md` | *Update in the same change as any real design shift. Delete a section you can't keep current — a stale one misleads more than none.* |
+| `product.md` | *Current state, not history. Edit rules in place; the reasoning behind a change goes in `decisions.md`.* |
+| `roadmap.md` | *Move items between sections rather than deleting them — a deleted "deferred" item loses the record that it was deliberately not built.* |
+| `design-system.md` | *Every token needs its semantic meaning — what it's reserved for, not just its value. Don't add one without saying when to use it.* |
+| `conventions.md` | *Add a rule only if a linter or formatter doesn't already enforce it, and give each rule a concrete example.* |
+
+**One line, not a section.** These are load-bearing but small; a maintenance section per doc would
+bloat the set the skill exists to keep lean.
+
+**Position is directly under the H1, not in a footer.** This standardizes `architecture.md`, whose
+rule currently sits at the bottom. The skill's own philosophy is that agents lose instructions
+buried later in a file — a rule about how to edit a doc has to be read *before* the edit, and a
+footer is exactly what a targeted edit skips.
+
 ## Files touched
 
 | File | Change |
