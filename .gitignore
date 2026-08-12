@@ -1,0 +1,9 @@
+# Packaged skill builds — attach these to GitHub Releases instead of committing
+*.skill
+
+# OS/editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
