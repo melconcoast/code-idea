@@ -30,7 +30,7 @@ Write the tests first. This repo has no runner, so a "test" is a fixture plan pl
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: scenario IDs `S1`–`S13`, referenced by every later task's verification step.
+- Produces: scenario IDs `S1`–`S17`, referenced by every later task's verification step.
 
 - [ ] **Step 1: Create the scenarios file**
 
@@ -80,6 +80,8 @@ Fixture A, run a second time against a repo that already contains `AGENTS.md`, `
 | S11 | Fixture A, target = Claude Code + Codex | Portable core; ceiling is the stricter of the two | Native mode for either |
 | S12 | Fixture A run twice, Claude-native then Codex-native | `docs/*.md` byte-identical across both runs | Layer 2 content varying by target |
 | S13 | Fixture B, Claude-native | Nested `CLAUDE.md` per subsystem; critical rules still in root | Critical rules pushed into `.claude/rules/` |
+| S16 | Fixture A, target = Antigravity alone | Content in `AGENTS.md` | A `GEMINI.md`, or any `CLAUDE.md` |
+| S17 | Fixture A, target = Antigravity, repo already has `GEMINI.md` | Content written into the existing `GEMINI.md` | A second root rules file alongside it |
 
 ## Convention scenarios
 
@@ -101,7 +103,7 @@ Expected: S1, S2, S3 all fail — the current skill regenerates without announci
 git add examples/test-scenarios.md
 git commit -m "test: add scenario fixtures for v1.2.0 changes
 
-Fifteen scenarios covering re-run confirmation, deferred decisions,
+Seventeen scenarios covering re-run confirmation, deferred decisions,
 per-agent layouts, and layer separation. S1-S3 currently fail against
 v1.1.0, which is the defect this release fixes."
 ```
@@ -218,12 +220,24 @@ Source: https://learn.chatgpt.com/docs/agent-configuration/agents-md — verifie
 - **Size cap:** 12,000 characters per rule file.
 - **Global:** `~/.gemini/GEMINI.md` applies across all workspaces.
 
-Not asserted: any precedence between `GEMINI.md` and `AGENTS.md`. The docs say "`GEMINI.md` *or*
-`AGENTS.md`" and never resolve a conflict between them. If a project has both, say so rather than
-guessing which wins — and prefer generating only one.
+**Which root file to generate:** `AGENTS.md`. `GEMINI.md`'s only documented role is the *global*
+file at `~/.gemini/GEMINI.md`, which this skill doesn't write. At the workspace root the two are
+documented as parallel equivalents with no stated preference, so `AGENTS.md` wins on portability
+alone — it's read by Codex and ~20 other agents at no extra cost.
 
-Source: https://antigravity.google/docs/rules-workflows and
-https://antigravity.google/docs/cli/best-practices — verified 2026-08-12
+**Exception:** if the repo already has a `GEMINI.md`, put the content there instead. Two root-level
+rules files with no documented precedence between them is worse than either alone.
+
+Not asserted: any precedence between `GEMINI.md` and `AGENTS.md`. The docs say "`GEMINI.md` *or*
+`AGENTS.md`" and never resolve a conflict. If a project has both, surface it rather than guessing.
+
+**The native capability worth adopting here is `.agents/rules/`,** not a different root filename —
+it's the documented default for workspace rules and the exact parallel of Claude Code's
+`.claude/rules/`. Offer it when there's genuinely path-scoped content, same rule.
+
+Source: https://antigravity.google/docs/rules-workflows,
+https://antigravity.google/docs/cli/best-practices, and
+https://antigravity.google/docs/cli/gcli-migration — verified 2026-08-12
 
 ## Generic / multiple agents
 
@@ -858,7 +872,7 @@ First pick the **layout** from the target agent(s) — this decides which files 
 |---|---|---|---|
 | Claude Code alone | `CLAUDE.md` (root) | `.claude/rules/` only if genuinely path-scoped content exists; nested `CLAUDE.md` per subsystem | `AGENTS.md` |
 | Codex alone | `AGENTS.md` | — | `CLAUDE.md` |
-| Antigravity alone | `AGENTS.md` | — | `CLAUDE.md` |
+| Antigravity alone | `AGENTS.md`, or the repo's existing `GEMINI.md` if it has one | `.agents/rules/` only if genuinely path-scoped content exists | `CLAUDE.md`; a second root rules file |
 | Two or more agents, or generic | `AGENTS.md` | `CLAUDE.md` containing `@AGENTS.md`, at root and beside every nested `AGENTS.md` | — |
 
 One named agent gets its native layout; plural or generic gets the portable one. Apply the strictest size limit across all selected agents. Keep critical rules in the root file even in Claude-native mode — nested files and path-scoped rules don't survive `/compact`. See `references/agent-profiles.md`.
@@ -1120,7 +1134,7 @@ Prepend to `CHANGELOG.md`:
 - **Per-agent layouts.** One named agent gets its native format: `CLAUDE.md` for Claude Code (which never reads `AGENTS.md`), `AGENTS.md` for Codex and Antigravity (which read it natively). Two or more agents, or a generic target, gets the portable layout — `AGENTS.md` plus a `CLAUDE.md` loader. Changing the target on a re-run migrates the existing files rather than orphaning them.
 - `references/agent-profiles.md` — per-agent container facts, each with a source URL and verified-on date. Expected to age; verify before trusting.
 - `docs/conventions.md` as a generated candidate for naming and structural rules beyond linter defaults, with matching defaults in `recommendation-heuristics.md`.
-- `examples/test-scenarios.md` — fifteen scenarios a change must be checked against, including "must NOT produce" cases.
+- `examples/test-scenarios.md` — seventeen scenarios a change must be checked against, including "must NOT produce" cases.
 - A `## Maintaining these docs` routing rule in generated output, so mid-project updates land in the content file rather than fragmenting across it and the loader, and so useful notes captured in Claude Code's machine-local auto memory get promoted where the team can see them.
 
 ### Changed
@@ -1153,11 +1167,11 @@ Every prior task verified its own scenarios in isolation. This runs them togethe
 
 **Files:** none — verification only.
 
-- [ ] **Step 1: Run all fifteen scenarios**
+- [ ] **Step 1: Run all seventeen scenarios**
 
 Work through `examples/test-scenarios.md` end to end against the current `SKILL.md`. Record pass/fail per scenario.
 
-Expected: all fifteen pass, including every "must NOT produce" column.
+Expected: all seventeen pass, including every "must NOT produce" column.
 
 - [ ] **Step 2: Re-check the line ceiling**
 
@@ -1197,4 +1211,4 @@ Report results honestly, including any scenario that failed and why. A failing s
 
 **Placeholder scan:** clean. Task 2's source URLs were placeholders in the first draft pending primary-doc verification; that verification was completed on 2026-08-12 and the real URLs are now inline. Task 2 Step 3 keeps a grep guard against the three claims that failed verification, so a future edit can't quietly reintroduce them from an older draft.
 
-**Consistency:** `## Pending decisions — do not resolve these yourself` and `**Status:** Pending` are used identically across Tasks 3, 8, 9, 11, 12, and 13. Scenario IDs S1–S15 are consistent between Task 1 and the tasks that reference them.
+**Consistency:** `## Pending decisions — do not resolve these yourself` and `**Status:** Pending` are used identically across Tasks 3, 8, 9, 11, 12, and 13. Scenario IDs S1–S17 are consistent between Task 1 and the tasks that reference them.

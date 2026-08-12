@@ -51,6 +51,26 @@ The Codex cap earns a design rule on its own: Codex stops adding files once the 
 reaches 32 KiB, so an oversized root file silently starves the nested ones. Keeping the root lean is
 a correctness requirement there, not just style.
 
+**Why Antigravity's native container is `AGENTS.md`, not `GEMINI.md`.** Checked directly, since
+"use each agent's own first-party filename" would otherwise suggest `GEMINI.md`:
+
+- `GEMINI.md`'s only documented role is the **global** file at `~/.gemini/GEMINI.md`, applied across
+  all workspaces. That is a user-level file, not something this skill writes into a project.
+- At the workspace root, the docs treat `GEMINI.md` and `AGENTS.md` as parallel equivalents — "parse
+  and enforce rule constraints defined inside your active directory's `GEMINI.md` and `AGENTS.md`
+  files." No preference, no deprecation, no migration in either direction.
+- The documented *primary* mechanism for workspace rules is neither file: it is `.agents/rules/`
+  ("Antigravity now defaults to `.agents/rules`").
+
+So `AGENTS.md` is at least as well supported as `GEMINI.md` here and additionally portable to Codex
+and ~20 other agents at no cost. Adopting `GEMINI.md` would trade that away for nothing. The
+genuinely native Antigravity capability to adopt is `.agents/rules/` — the exact parallel of
+`.claude/rules/` for Claude Code.
+
+**Exception:** if the repo already uses `GEMINI.md`, honor it and put the content there rather than
+introducing a competing second file. Two root-level rule files with no documented precedence is a
+worse outcome than either one alone.
+
 Claude Code is the outlier: Codex and Antigravity read `AGENTS.md` natively, so for them the
 portable layout *is* their native layout. Claude Code's native layout is `CLAUDE.md` plus its own
 extras — see C7.
@@ -165,7 +185,7 @@ The selection rule:
 |---|---|---|---|
 | Claude Code alone | `CLAUDE.md` (root) | `.claude/rules/` path-scoped rules, nested `CLAUDE.md`, skills, hooks | `AGENTS.md` |
 | Codex alone | `AGENTS.md` | `.codex/config.toml` | `CLAUDE.md` |
-| Antigravity alone | `AGENTS.md` | `.agents/rules/`, skills | `CLAUDE.md` |
+| Antigravity alone | `AGENTS.md` — or the existing `GEMINI.md` if the repo already uses one | `.agents/rules/` when path-scoped content exists, skills | `CLAUDE.md`; a second root rules file |
 | Two or more agents, **or** generic | `AGENTS.md` + `CLAUDE.md` containing `@AGENTS.md` | none by default | — |
 
 **One named agent gets its native best practice; two or more, or generic, gets the portable core.**
