@@ -33,9 +33,23 @@ They live in the new `references/agent-profiles.md`, which carries this same war
 
 | Agent | Reads `AGENTS.md`? | Loader needed | Native extras | Size limit |
 |---|---|---|---|---|
-| Codex | Yes, natively. Merges root→leaf; `AGENTS.override.md` wins in-folder | No | `~/.codex/config.toml`, `.codex/config.toml` | 32 KiB |
-| Antigravity | Yes, since v1.20.3 (2026-03-05). Merged with `GEMINI.md`, which wins conflicts | No | `.agents/rules/`, skills | 12 K chars per rule file |
+| Codex | Yes, natively. Concatenated root→leaf, blank-line joined; closer files override by appearing later. `AGENTS.override.md` wins per directory; one file per directory | No | `.codex/config.toml` | 32 KiB (`project_doc_max_bytes`); **stops adding files at the cap** |
+| Antigravity | Yes, natively, alongside `GEMINI.md` | No | `.agents/rules/` (`.agent/rules` still supported), skills | 12 K chars per rule file |
 | Claude Code | **No** | **Yes** — `CLAUDE.md` containing `@AGENTS.md` | `.claude/rules/` (path-scoped), skills, hooks | ~200 lines |
+
+Three earlier claims did not survive primary-source verification and have been removed:
+
+- **"Codex is trained to run the test commands named in `AGENTS.md`."** Not supported — the docs
+  frame commands as working agreements, not execution directives. This was the stated reason for
+  leading with commands, so that rationale is replaced by the verified truncation behavior below.
+- **"`GEMINI.md` wins conflicts with `AGENTS.md`."** Antigravity's docs say "`GEMINI.md` *or*
+  `AGENTS.md`" and never state a precedence. Dropped rather than guessed.
+- **"Antigravity added `AGENTS.md` support in v1.20.3."** A third-party blog claim, not in Google's
+  docs. The support is confirmed; the version is not, so no version is asserted.
+
+The Codex cap earns a design rule on its own: Codex stops adding files once the combined size
+reaches 32 KiB, so an oversized root file silently starves the nested ones. Keeping the root lean is
+a correctness requirement there, not just style.
 
 Claude Code is the outlier: Codex and Antigravity read `AGENTS.md` natively, so for them the
 portable layout *is* their native layout. Claude Code's native layout is `CLAUDE.md` plus its own
@@ -174,9 +188,10 @@ opens the repo in Claude Code.
 - Where a rule must hold regardless of what the agent decides, note that a `PreToolUse` hook is the
   only enforcement layer — `CLAUDE.md` is context, not configuration.
 
-**Content tuning by agent**, applied to whichever file holds the content: Codex is trained to run
-the test commands named in `AGENTS.md`, so commands go near the top when Codex is a target; the size
-ceiling is the strictest limit across all selected agents.
+**Content tuning by agent**, applied to whichever file holds the content: the size ceiling is the
+strictest limit across all selected agents, and when Codex is a target the root file is kept well
+clear of the 32 KiB cap — Codex stops adding files once the combined size reaches it, so a bloated
+root silently drops the deepest and most specific nested guidance.
 
 **The trade, stated plainly:** a Claude-native scaffold is invisible to Codex and Antigravity, and
 vice versa. Adding an agent later means re-running the skill — which C1 and C2 now handle correctly,
@@ -283,8 +298,8 @@ that agent's own official documentation:
 | Agent | Container, per its official docs |
 |---|---|
 | Claude Code | `CLAUDE.md` (~200-line target), `.claude/rules/` with `paths:` frontmatter, nested `CLAUDE.md` for subtrees, skills for procedures, hooks for hard enforcement |
-| Codex | `AGENTS.md` merged root→leaf, `AGENTS.override.md` precedence, 32 KiB cap, commands led first because Codex is trained to run them, `.codex/config.toml` |
-| Antigravity | `AGENTS.md` merged with `GEMINI.md` (which wins conflicts), `.agents/rules/` at 12 K chars per file, skills |
+| Codex | `AGENTS.md` concatenated root→leaf, `AGENTS.override.md` precedence per directory, 32 KiB cap that stops adding files once reached, `.codex/config.toml` |
+| Antigravity | `AGENTS.md` read alongside `GEMINI.md`, `.agents/rules/` at 12 K chars per file, skills |
 | Generic / multiple | `AGENTS.md` + `CLAUDE.md` loader, strictest limits across selected agents |
 
 **Layer 2 — universal engineering content.** Identical in every mode, because good naming and sound

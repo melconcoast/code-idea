@@ -75,7 +75,7 @@ Fixture A, run a second time against a repo that already contains `AGENTS.md`, `
 | S6 | Fixture A, user answers everything | No pending section at all | An empty "Pending decisions" heading |
 | S7 | Fixture C with a pending decision on file | It is surfaced first, with an option to keep it parked | Re-asking it as if new |
 | S8 | Fixture A, target = Claude Code alone | Content in root `CLAUDE.md`; auto-memory promotion line | Any `AGENTS.md` |
-| S9 | Fixture A, target = Codex alone | Content in `AGENTS.md`; commands near the top | Any `CLAUDE.md` |
+| S9 | Fixture A, target = Codex alone | Content in `AGENTS.md`, root file well under the 32 KiB cap | Any `CLAUDE.md` |
 | S10 | Fixture A, target = generic | `AGENTS.md` + `CLAUDE.md` containing `@AGENTS.md` | Native-mode layout |
 | S11 | Fixture A, target = Claude Code + Codex | Portable core; ceiling is the stricter of the two | Native mode for either |
 | S12 | Fixture A run twice, Claude-native then Codex-native | `docs/*.md` byte-identical across both runs | Layer 2 content varying by target |
@@ -119,15 +119,25 @@ The new home for all per-agent facts (C10, C12 Layer 1). Everything else referen
 - Consumes: nothing.
 - Produces: the per-agent container facts that `SKILL.md` Step 3 and `references/templates.md` both point at. Agent keys used downstream: `claude-code`, `codex`, `antigravity`, `generic`.
 
-- [ ] **Step 1: Verify Codex and Antigravity against primary sources**
+- [ ] **Step 1: Confirm the verification record (already performed 2026-08-12)**
 
-The Claude Code facts were fetched directly from `https://code.claude.com/docs/en/memory`. The Codex and Antigravity facts came from secondary summaries and are **not yet citable** under the C12 rule.
+All three agents were verified against primary sources on 2026-08-12. Sources:
 
-Fetch and confirm each claim before writing it:
-- Codex — `https://github.com/openai/codex/blob/main/docs/config.md` and the AGENTS.md section of the Codex docs. Confirm: native `AGENTS.md` support, root→leaf merge order, `AGENTS.override.md` precedence, the 32 KiB cap, and `~/.codex/config.toml` / `.codex/config.toml`.
-- Antigravity — `https://antigravity.google/docs/rules-workflows`. Confirm: native `AGENTS.md` support and since which version, the `GEMINI.md` merge and precedence, `.agents/rules/` location, and the 12 K character per-file cap.
+- Claude Code — https://code.claude.com/docs/en/memory
+- Codex — https://learn.chatgpt.com/docs/agent-configuration/agents-md (redirected from `developers.openai.com/codex/guides/agents-md`)
+- Antigravity — https://antigravity.google/docs/rules-workflows and https://antigravity.google/docs/cli/best-practices
 
-Expected: each claim either confirmed with a URL, or **dropped from the table**. Do not write a row you cannot cite. If a claim is contradicted, correct it here and note the correction in the task's commit message — the spec's table is not authoritative over primary docs.
+**Three claims were removed for lack of primary support.** Do not reintroduce them from the spec's earlier drafts or from blog sources:
+
+| Removed claim | Why |
+|---|---|
+| "Codex is trained to run test commands named in `AGENTS.md`" | Docs frame commands as working agreements, not execution directives |
+| "`GEMINI.md` wins conflicts with `AGENTS.md`" | Antigravity docs say "`GEMINI.md` *or* `AGENTS.md`" and state no precedence |
+| "Antigravity added `AGENTS.md` support in v1.20.3" | Third-party blog, not Google's docs. Support is confirmed; the version is not |
+
+Step 2's content already reflects these corrections. This step exists so an executing agent knows the removals were deliberate rather than oversights.
+
+If any source URL 404s or its content has changed, treat the affected row as unverified: correct it, or drop it and note the drop in the commit message. Primary docs outrank this plan.
 
 - [ ] **Step 2: Write the file**
 
@@ -179,25 +189,41 @@ Source: https://code.claude.com/docs/en/memory — verified 2026-08-12
 ## Codex
 
 - **Reads `AGENTS.md`?** Yes, natively. No loader needed.
-- **Merge order:** root→leaf. `AGENTS.override.md` takes precedence over `AGENTS.md` in the same
-  folder.
-- **Size cap:** 32 KiB by default.
-- **Ordering that matters:** Codex is trained to run the build/test/lint commands named in
-  `AGENTS.md`, so lead with them.
-- **Config:** `~/.codex/config.toml` globally, `.codex/config.toml` per project. Not a context file —
+- **Discovery:** from the project root down to the current working directory. Per directory it takes
+  `AGENTS.override.md`, else `AGENTS.md`, else a name from `project_doc_fallback_filenames` — at most
+  one file per directory. Empty files are skipped. It stops at the current directory.
+- **Merge:** files are concatenated root→leaf, joined by blank lines. Closer files override earlier
+  guidance by appearing later in the combined prompt.
+- **Size cap:** 32 KiB (`project_doc_max_bytes`, 32,768 bytes default). Codex **stops adding files**
+  once the combined size reaches the cap.
+- **Config:** `.codex/config.toml` per project, `~/.codex/config.toml` globally. Not a context file —
   don't put project rules there.
 
-Source: [fill from Step 1 — must be a primary Codex docs URL] — verified 2026-08-12
+**Gotcha that shapes what this skill generates:** because Codex stops adding files at the cap, an
+oversized root `AGENTS.md` silently starves the nested ones — the deepest, most specific guidance is
+what gets dropped. Keeping the root lean is a correctness requirement here, not just style. Raising
+`project_doc_max_bytes` or splitting across nested directories are the escape hatches.
+
+Not asserted: that Codex automatically executes the commands named in `AGENTS.md`. The docs describe
+them as working agreements, not execution directives.
+
+Source: https://learn.chatgpt.com/docs/agent-configuration/agents-md — verified 2026-08-12
 
 ## Antigravity
 
-- **Reads `AGENTS.md`?** Yes, natively. No loader needed.
-- **Merge:** read alongside `GEMINI.md`; `GEMINI.md` wins on conflicting rules.
-- **Workspace rules:** `.agents/rules/` in the workspace or git root.
-- **Size cap:** 12 K characters per rule file.
+- **Reads `AGENTS.md`?** Yes, natively, alongside `GEMINI.md`. No loader needed. Both are parsed on
+  startup and consulted before the agent suggests changes.
+- **Workspace rules:** `.agents/rules/` in the workspace or git root. `.agent/rules` retains
+  backward support.
+- **Size cap:** 12,000 characters per rule file.
 - **Global:** `~/.gemini/GEMINI.md` applies across all workspaces.
 
-Source: [fill from Step 1 — must be a primary Antigravity docs URL] — verified 2026-08-12
+Not asserted: any precedence between `GEMINI.md` and `AGENTS.md`. The docs say "`GEMINI.md` *or*
+`AGENTS.md`" and never resolve a conflict between them. If a project has both, say so rather than
+guessing which wins — and prefer generating only one.
+
+Source: https://antigravity.google/docs/rules-workflows and
+https://antigravity.google/docs/cli/best-practices — verified 2026-08-12
 
 ## Generic / multiple agents
 
@@ -215,16 +241,16 @@ everywhere.
 - [ ] **Step 3: Verify no uncited claim survives**
 
 ```bash
-grep -n "fill from Step 1" references/agent-profiles.md
+grep -n "^Source:" references/agent-profiles.md
 ```
 
-Expected: no output. Every `Source:` line must be a real URL. If this prints anything, Step 1 wasn't finished.
+Expected: three entries, each a real `https://` URL with `verified 2026-08-12`. No brackets, no TBD.
 
 ```bash
-grep -c "verified 2026-08-12" references/agent-profiles.md
+grep -in "trained to run\|wins on conflict\|v1\.20\.3" references/agent-profiles.md
 ```
 
-Expected: `3` (one per agent with a source; the generic section cites no agent behavior).
+Expected: no output. These are the three claims that failed verification; if any reappeared, it was copied from an outdated draft.
 
 - [ ] **Step 4: Commit**
 
@@ -1169,6 +1195,6 @@ Report results honestly, including any scenario that failed and why. A failing s
 
 **Known gap, deliberately left:** the spec's C7 mentions offering `.claude/rules/` in Claude-native mode. Task 9's Step 3 table says "only if genuinely path-scoped content exists," but no task writes a `.claude/rules/` skeleton into `templates.md`. This is intentional — it's an offer the skill makes conversationally, and a skeleton would imply it's a default. If execution finds the skill generating malformed rules files, add the skeleton to `templates.md` as a follow-up.
 
-**Placeholder scan:** one deliberate placeholder remains — `[fill from Step 1]` in Task 2's agent-profiles content, which Task 2 Step 3 verifies is gone before committing. It exists because the Codex and Antigravity source URLs must be confirmed against primary docs during execution rather than copied from search summaries.
+**Placeholder scan:** clean. Task 2's source URLs were placeholders in the first draft pending primary-doc verification; that verification was completed on 2026-08-12 and the real URLs are now inline. Task 2 Step 3 keeps a grep guard against the three claims that failed verification, so a future edit can't quietly reintroduce them from an older draft.
 
 **Consistency:** `## Pending decisions — do not resolve these yourself` and `**Status:** Pending` are used identically across Tasks 3, 8, 9, 11, 12, and 13. Scenario IDs S1–S15 are consistent between Task 1 and the tasks that reference them.
