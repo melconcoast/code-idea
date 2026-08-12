@@ -44,7 +44,15 @@ See `docs/architecture.md` for the full system design.
 
 ---
 
-## CLAUDE.md (root, only if Claude-Code-specific extras are needed)
+## CLAUDE.md (root and each nested subsystem, whenever Claude Code is a target agent)
+
+A single import line is a complete, valid file — ship exactly this when there's nothing Claude-specific to add:
+
+```markdown
+@AGENTS.md
+```
+
+The section below is optional scaffolding, appended only if there's genuinely something extra. Never add it empty or with a placeholder:
 
 ```markdown
 @AGENTS.md
@@ -52,6 +60,8 @@ See `docs/architecture.md` for the full system design.
 ## Claude Code specific
 - [Anything genuinely specific to Claude Code — subagent conventions, permitted tools, etc. Keep this section short; if it's not Claude-specific, it belongs in AGENTS.md instead.]
 ```
+
+The nested `<subsystem>/CLAUDE.md` is the same bare one-liner, importing that subsystem's sibling `AGENTS.md`. All real content stays in AGENTS.md.
 
 ---
 
@@ -152,7 +162,7 @@ Keep this file in sync with the actual code. A stale architecture doc is worse t
 
 ---
 
-## Nested `<subsystem>/CLAUDE.md` or `AGENTS.md` (monorepos only)
+## Nested `<subsystem>/AGENTS.md` (monorepos only)
 
 ```markdown
 # [Subsystem name]

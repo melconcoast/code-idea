@@ -1,5 +1,7 @@
 # code-idea
 
+*"Code this idea"* — take a plan or idea from conversation to a state a coding agent can actually build from correctly.
+
 A Claude Skill that turns a project plan, idea, or planning conversation into a complete, AI-coding-agent-ready documentation set — a lean root `AGENTS.md` plus linked docs (architecture, decisions, roadmap, product, design-system), and, for monorepos, nested per-subsystem context files.
 
 It doesn't apply one fixed template. It interviews you (or reads the plan straight out of your conversation) to figure out what your specific project actually needs, proposes grounded recommendations for anything you don't have a strong opinion on — tech stack, database/caching choice, UI theme and typography — and lets you confirm or override each one.
@@ -15,7 +17,7 @@ Only what a given project actually warrants — never a fixed set:
 | File | When |
 |---|---|
 | `AGENTS.md` | Always — the canonical, cross-tool root instruction file |
-| `CLAUDE.md` | Only if you're standardized on Claude Code specifically — a thin file that `@`-imports AGENTS.md |
+| `CLAUDE.md` | Whenever Claude Code is a target agent — a thin file that just `@`-imports AGENTS.md, so Claude Code actually loads it |
 | `docs/architecture.md` | Real architectural complexity worth recording |
 | `docs/decisions.md` | Non-obvious decisions have been made (append-only, dated, rationale-first) |
 | `docs/roadmap.md` | There's a real MVP-vs-later split worth protecting |
@@ -33,7 +35,8 @@ Only what a given project actually warrants — never a fixed set:
 
 ## Design principles baked in
 
-- **AGENTS.md is canonical**, not CLAUDE.md — read natively by 20+ coding agents (Codex, Cursor, Copilot, Gemini CLI, Claude Code, and others), with nested, closest-file-wins support for monorepos. CLAUDE.md is only added as a thin import when a team is specifically standardized on Claude Code.
+- **AGENTS.md is canonical**, not CLAUDE.md — read natively by 20+ coding agents (Codex, Cursor, Copilot, Gemini CLI, Claude Code, and others), with nested, closest-file-wins support for monorepos. All content lives there. If you target Claude Code, a thin `@AGENTS.md` companion CLAUDE.md is generated next to it at every level, since Claude Code's context loading is CLAUDE.md-centric and won't pick up a bare AGENTS.md on its own.
+- **Nothing gets written as settled unless you confirmed it** — choices the assistant proposed, or that a throwaway prototype happened to use, get re-surfaced for a real decision instead of quietly hardening into your docs.
 - **Root file stays short** — starts near 30 lines, ~150 lines is treated as a hard ceiling. Everything longer moves into a linked doc.
 - **Most-violated rules go first** — long-context agents can lose instructions buried later in a file.
 - **Decisions vs. product are separate** — `decisions.md` is an append-only historical log; `product.md` is the current-state living spec.
