@@ -271,6 +271,53 @@ Migration is destructive, so it is proposed and confirmed, never silent — the 
 move, merge, or are deleted before anything is written. Content is never dropped: anything without a
 home in the new layout is raised as a question, not discarded.
 
+### C12 — Two layers: agent-native container, universal engineering content
+
+This reframes C7 and governs how it is written. C7 as drafted says *where files go* per agent, but
+leaves implicit *what goes in them* — which invites the wrong reading, that picking Claude Code
+changes the engineering guidance itself. It does not. Every scaffold is two layers:
+
+**Layer 1 — the agent-native container.** How context is stored, loaded, and scoped, taken from
+that agent's own official documentation:
+
+| Agent | Container, per its official docs |
+|---|---|
+| Claude Code | `CLAUDE.md` (~200-line target), `.claude/rules/` with `paths:` frontmatter, nested `CLAUDE.md` for subtrees, skills for procedures, hooks for hard enforcement |
+| Codex | `AGENTS.md` merged root→leaf, `AGENTS.override.md` precedence, 32 KiB cap, commands led first because Codex is trained to run them, `.codex/config.toml` |
+| Antigravity | `AGENTS.md` merged with `GEMINI.md` (which wins conflicts), `.agents/rules/` at 12 K chars per file, skills |
+| Generic / multiple | `AGENTS.md` + `CLAUDE.md` loader, strictest limits across selected agents |
+
+**Layer 2 — universal engineering content.** Identical in every mode, because good naming and sound
+system design do not vary by which agent reads them:
+
+| Content | Home |
+|---|---|
+| System design, components, data flow, constraints | `docs/architecture.md` |
+| Naming conventions, code style, file/project structure | `docs/conventions.md` **(new candidate file)**, or a section in the root file when thin |
+| UI: palette, typography, component patterns, copy voice | `docs/design-system.md` |
+| Business rules, pricing, access logic | `docs/product.md` |
+| Non-obvious choices with rationale | `docs/decisions.md` |
+| MVP vs. deferred scope | `docs/roadmap.md` |
+
+Layer 2 is where `references/recommendation-heuristics.md` does its work — the grounded defaults
+the skill proposes during Step 2 for stack, database, caching, UI direction, and now naming
+conventions. Those recommendations are agent-independent and must not drift by target.
+
+**`docs/conventions.md` is a new Step 3 candidate**, generated on the existing rule: only when there
+are real conventions beyond what a linter or formatter already enforces — API route shapes, database
+table and column naming, component and file naming, module boundaries. A project with nothing but
+tooling defaults keeps the thin `## Code style` section in the root file and gets no separate doc.
+
+**Layer 1 must cite its sources.** "Official best practices" means traceable to the agent's own
+documentation, not inferred. `references/agent-profiles.md` (C10) gains a source URL and a
+verified-on date per agent, so every container claim can be re-checked — the discipline that caught
+`SKILL.md:23`. Any container behavior the skill cannot cite is left out rather than guessed.
+
+**Layer separation is a rule, not just a description.** Layer 1 decides where content lives and how
+it loads; it never changes what the content says. Layer 2 decides what is true about the project; it
+never assumes a file layout. A re-run that changes the target agent therefore rewrites Layer 1 only
+— which is exactly what makes C11's migration safe, since Layer 2 moves across unchanged.
+
 ## Files touched
 
 | File | Change |
@@ -279,7 +326,8 @@ home in the new layout is raised as a question, not discarded.
 | `SKILL.md` (body) | C1, C2, C3, C6, C7, C8, C9 — new Step 0, tag (c), defer exit, target-agent question, rewritten philosophy section, Step 3 selection table, Step 5 reporting + `/context` check, rewritten line 23 |
 | `references/templates.md` | C4, C5, C8 — pending-decisions section, `Status: Pending` entry, mode-dependent routing rule, a `CLAUDE.md`-as-content skeleton for native mode, amended one-liner note, preamble carve-out |
 | `references/best-practices.md` | C9 — Claude Code specifics and their limits; reasoning for C2 and C4 |
-| `references/agent-profiles.md` | C10 — new file |
+| `references/agent-profiles.md` | C10, C12 — new file; per-agent container facts with a source URL and verified-on date for each |
+| `references/recommendation-heuristics.md` | C12 — this is Layer 2's source of grounded defaults; extend with naming-convention guidance to match the new `docs/conventions.md` candidate |
 | `CONTRIBUTING.md` | C5 — carve-out at line 30; file-ownership map gains `agent-profiles.md` |
 | `README.md` | Surface deferred decisions and the per-agent native/portable split. The AGENTS.md-first framing is currently load-bearing in the overview and must be rewritten, not appended to |
 | `AGENTS.md` (this repo) | The "content always lives in AGENTS.md" critical rule is now wrong as stated; rewrite to the native/portable rule |
@@ -334,3 +382,7 @@ case where each new rule clearly fires and one where it clearly does not.
 | Claude-native monorepo | Nested `CLAUDE.md` carries subsystem content; critical rules remain in root `CLAUDE.md`, not pushed into `.claude/rules/` |
 | Portable-mode monorepo | Nested `AGENTS.md` carries content; nested `CLAUDE.md` is the loader plus routing echo |
 | Re-run switching Claude-only → +Codex | Existing `CLAUDE.md`-as-content is migrated to `AGENTS.md` with a loader, not left orphaned |
+| Same plan, scaffolded twice for different agents | Layer 2 output is **byte-identical** across both runs — `docs/architecture.md`, `conventions.md`, `design-system.md`, `product.md` do not vary by target. Only the container differs |
+| Project with real naming conventions | `docs/conventions.md` generated and linked |
+| Project with only linter-default style | No `conventions.md`; thin `## Code style` section in the root file instead |
+| Any container claim in the output | Traceable to a source URL in `agent-profiles.md`; nothing asserted about an agent that cannot be cited |
