@@ -38,7 +38,16 @@ They live in the new `references/agent-profiles.md`, which carries this same war
 | Claude Code | **No** | **Yes** — `CLAUDE.md` containing `@AGENTS.md` | `.claude/rules/` (path-scoped), skills, hooks | ~200 lines |
 
 Claude Code is the outlier: Codex and Antigravity read `AGENTS.md` natively, so for them the
-portable core *is* the best-practice output and no adapter exists.
+portable layout *is* their native layout. Claude Code's native layout is `CLAUDE.md` plus its own
+extras — see C7.
+
+Two further verified facts constrain C7:
+
+- Project-root `CLAUDE.md` is re-injected after `/compact`. Nested `CLAUDE.md` files and
+  path-scoped `.claude/rules/` are **not** — they reload only when Claude next reads a matching
+  file. Critical rules must therefore stay in the root file.
+- Claude Code hooks are the only hard enforcement layer; `CLAUDE.md` is context, not configuration.
+  Rules that must hold regardless of what the agent decides belong in a `PreToolUse` hook.
 
 Corrections to prior assumptions, all now verified:
 
@@ -129,53 +138,96 @@ Without this, the existing ban keeps suppressing C4. Add to `CONTRIBUTING.md:30`
 The closing file tree gains a **Pending decisions** section listing what is still owed, so the user
 leaves knowing what they parked.
 
-### C7 — Portable core + per-agent adapters
+### C7 — Native layout per agent, portable core as the fallback
 
-The doc set — `AGENTS.md` plus `docs/` — is identical regardless of target agent. That is the
-portable core. Each selected agent adds a thin adapter with three parts:
+**This changes the skill's central thesis.** "Content always lives in `AGENTS.md`" becomes
+"content lives in whatever the target agent reads natively." `AGENTS.md` is demoted from the
+universal home to one of several native formats — the one Codex and Antigravity happen to read, and
+the one used whenever the target is plural or unknown.
 
-1. **Loader file.** Claude Code only: `CLAUDE.md` containing `@AGENTS.md`. Codex and Antigravity
-   need nothing. `CLAUDE.md` is generated **unconditionally**, including for a generic target — it
-   is one inert line that every other agent ignores, and without it the docs are invisible the
-   moment someone opens the repo in Claude Code.
-2. **Content tuning** applied to the same `AGENTS.md`: ordering emphasis (Codex is trained to run
-   the test commands named in `AGENTS.md`, so commands go near the top when Codex is a target), and
-   a size ceiling equal to the **strictest limit across all selected agents**, so one file stays
-   valid everywhere.
-3. **Optional native extras**, offered only when an agent is the sole target and only as an opt-in:
-   `.claude/rules/` path-scoped rules, `.agents/rules/`, agent-specific skills. Adopting these
-   trades away portability, so the user chooses knowingly.
+The selection rule:
+
+| Target | Content lives in | Extras offered | No longer generated |
+|---|---|---|---|
+| Claude Code alone | `CLAUDE.md` (root) | `.claude/rules/` path-scoped rules, nested `CLAUDE.md`, skills, hooks | `AGENTS.md` |
+| Codex alone | `AGENTS.md` | `.codex/config.toml` | `CLAUDE.md` |
+| Antigravity alone | `AGENTS.md` | `.agents/rules/`, skills | `CLAUDE.md` |
+| Two or more agents, **or** generic | `AGENTS.md` + `CLAUDE.md` containing `@AGENTS.md` | none by default | — |
+
+**One named agent gets its native best practice; two or more, or generic, gets the portable core.**
+Going native for one of several selected agents would leave the others reading nothing, so plurality
+forces the portable layout. Generic keeps the loader for the reason established earlier: it is one
+inert line that every other agent ignores, and without it the docs are invisible the moment someone
+opens the repo in Claude Code.
+
+`docs/*.md` is unchanged in every mode — those files are agent-agnostic and linked, not loaded.
+
+**Claude Code native mode, specifically:**
+
+- Root `CLAUDE.md` holds the content, against the official ~200-line target.
+- **Critical rules stay in the root file.** `.claude/rules/` is *offered, not default*, and only
+  when there is genuinely path-scoped content — a monorepo, or a subsystem with distinct
+  conventions. This is forced by the compaction behavior above: a critical rule pushed into a
+  path-scoped file silently disappears after `/compact` until Claude next touches a matching file.
+- Nested subsystem context uses nested `CLAUDE.md` (loads on demand), not nested `AGENTS.md`.
+- Recurring procedures continue to become skills, as the skill already recommends.
+- Where a rule must hold regardless of what the agent decides, note that a `PreToolUse` hook is the
+  only enforcement layer — `CLAUDE.md` is context, not configuration.
+
+**Content tuning by agent**, applied to whichever file holds the content: Codex is trained to run
+the test commands named in `AGENTS.md`, so commands go near the top when Codex is a target; the size
+ceiling is the strictest limit across all selected agents.
+
+**The trade, stated plainly:** a Claude-native scaffold is invisible to Codex and Antigravity, and
+vice versa. Adding an agent later means re-running the skill — which C1 and C2 now handle correctly,
+since the re-run detects the existing scaffold and re-asks the target-agent question rather than
+inferring it.
 
 The target-agent question in Step 2 becomes multi-select over Claude Code / Codex / Antigravity /
-generic, and stays in the always-re-ask set. It must never be inferred from a `CLAUDE.md` on disk —
-we now write that file unconditionally, so its presence would otherwise become self-confirming on
-every future run.
+generic, and stays in the always-re-ask set. It must never be inferred from which files exist on
+disk, since under this model the file layout is itself a product of a previous answer and would
+otherwise be self-confirming on every future run.
 
-Its job also changes: it no longer decides *whether* `CLAUDE.md` exists, only which adapters apply
-and whether a `## Claude Code specific` section is warranted. Step 3's table row and the philosophy
-bullet at `SKILL.md:23` both simplify accordingly.
+### C8 — Doc-routing rule, scaled to the mode
 
-### C8 — Doc-routing rule in both files
+Every mode gets a `## Maintaining these docs` section in whichever file holds the content. What it
+says depends on the mode, because C7 removes most of the ambiguity from native mode.
 
-Canonical version in `AGENTS.md`, because it covers every agent including generic targets:
+**Native mode** (one named agent) — there is only one content file, so routing is about *which
+doc*, not which instruction file:
 
 ```markdown
 ## Maintaining these docs
-- All rules, commands, and conventions live in THIS file. `CLAUDE.md` is a loader only — never add
-  content to it.
+- New rules, commands, and conventions → this file.
 - New decisions → `docs/decisions.md` (append-only). Current business rules → `docs/product.md`.
-- Nested subsystems: edit `<subsystem>/AGENTS.md`, never `<subsystem>/CLAUDE.md`.
-- If something useful was captured in Claude Code's auto memory, promote it here so the team gets it.
+- Recurring step-by-step procedures → a skill, not this file.
 ```
 
-Short visible echo in `CLAUDE.md`. This is a deliberate amendment to `templates.md`'s current
-"ship exactly this" one-liner, and that line is updated so the two do not contradict. It must be
-visible markdown, not an HTML comment — see the verified facts above.
+**Claude Code native mode** adds one line, because auto memory is machine-local and never committed:
+
+```markdown
+- If something useful landed in auto memory (`/memory`), promote it here so the team gets it.
+```
+
+**Portable mode** (two or more agents, or generic) adds the CLAUDE-vs-AGENTS routing that P3
+identified:
+
+```markdown
+- All rules live in THIS file. `CLAUDE.md` is a loader only — never add content to it.
+- Nested subsystems: edit `<subsystem>/AGENTS.md`, never `<subsystem>/CLAUDE.md`.
+```
+
+plus a short visible echo in `CLAUDE.md` itself. That echo is a deliberate amendment to
+`templates.md`'s current "ship exactly this" one-liner, and that line is updated so the two do not
+contradict. It must be visible markdown, not an HTML comment — see the verified facts above.
+
+**P3 largely dissolves in native mode.** With no `CLAUDE.md`/`AGENTS.md` split there is nothing to
+fragment, which is a genuine argument in C7's favor that was not obvious before verifying.
 
 **Stated limit, not oversold:** this rule reliably catches an agent *reasoning about where to put a
 change*, which is the common case. It cannot intercept harness paths that write without consulting
-file content. The `AGENTS.md` routing rule makes those recoverable — the next agent that reads it
-knows to migrate the content — rather than preventing them.
+file content. The routing rule makes those recoverable — the next agent that reads it knows to
+migrate the content — rather than preventing them.
 
 ### C9 — Rewrite the Claude Code rationale, and document its limits
 
@@ -201,16 +253,36 @@ This exists to contain the maintenance surface. Per-agent knowledge is the faste
 the repo — `SKILL.md:23` was stale within one release — so it belongs in exactly one file with an
 explicit warning, not spread across `SKILL.md` and `templates.md`.
 
+### C11 — Mode migration on re-run
+
+C7 makes the file layout a *product* of the target-agent answer, and C2 makes that answer
+re-askable. Together they create a case that did not exist before: a re-run where the answer
+changes, and the existing layout is now wrong for it.
+
+The skill must migrate rather than orphan. Three transitions matter:
+
+| Transition | Action |
+|---|---|
+| Claude-native → portable (agent added) | Move `CLAUDE.md`'s content into a new `AGENTS.md`; reduce `CLAUDE.md` to the loader plus routing echo. Path-scoped `.claude/rules/` content is surfaced to the user, since it has no portable equivalent — it either folds into `AGENTS.md` or is knowingly kept as Claude-only |
+| Portable → Claude-native (agents dropped) | Fold `AGENTS.md` into `CLAUDE.md`; delete `AGENTS.md`. Confirm before deleting |
+| Codex-native → portable | Add the `CLAUDE.md` loader. `AGENTS.md` is already correct; nothing moves |
+
+Migration is destructive, so it is proposed and confirmed, never silent — the user sees which files
+move, merge, or are deleted before anything is written. Content is never dropped: anything without a
+home in the new layout is raised as a question, not discarded.
+
 ## Files touched
 
 | File | Change |
 |---|---|
-| `SKILL.md` | C1, C2, C3, C6, C7, C8, C9 — new Step 0, tag (c), defer exit, target-agent question, Step 3 table, Step 5 reporting + `/context` check, rewritten line 23 |
-| `references/templates.md` | C4, C5, C8 — pending-decisions section, `Status: Pending` entry, routing rule in both `AGENTS.md` and `CLAUDE.md` skeletons, amended one-liner note, preamble carve-out |
+| `SKILL.md` (frontmatter) | C7 — the `description` currently promises "a lean root AGENTS.md plus linked docs," which is no longer true in native mode. Must describe the layout as agent-determined, without losing the trigger phrases that make the skill fire |
+| `SKILL.md` (body) | C1, C2, C3, C6, C7, C8, C9 — new Step 0, tag (c), defer exit, target-agent question, rewritten philosophy section, Step 3 selection table, Step 5 reporting + `/context` check, rewritten line 23 |
+| `references/templates.md` | C4, C5, C8 — pending-decisions section, `Status: Pending` entry, mode-dependent routing rule, a `CLAUDE.md`-as-content skeleton for native mode, amended one-liner note, preamble carve-out |
 | `references/best-practices.md` | C9 — Claude Code specifics and their limits; reasoning for C2 and C4 |
 | `references/agent-profiles.md` | C10 — new file |
 | `CONTRIBUTING.md` | C5 — carve-out at line 30; file-ownership map gains `agent-profiles.md` |
-| `README.md` | Surface deferred decisions and per-agent adapters |
+| `README.md` | Surface deferred decisions and the per-agent native/portable split. The AGENTS.md-first framing is currently load-bearing in the overview and must be rewritten, not appended to |
+| `AGENTS.md` (this repo) | The "content always lives in AGENTS.md" critical rule is now wrong as stated; rewrite to the native/portable rule |
 | `CHANGELOG.md` | v1.2.0 |
 
 **Line budget.** `SKILL.md` is 88 lines against a ~150 hard ceiling. Estimated net change is roughly
@@ -226,8 +298,22 @@ explicit warning, not spread across `SKILL.md` and `templates.md`.
 - Per-agent companion files beyond Claude Code (`.github/copilot-instructions.md`, `.cursorrules`).
   Codex and Antigravity need none, and Cursor/Copilot profiles are unverified. They can be added to
   `agent-profiles.md` once verified.
-- Fully divergent per-agent template sets. Rejected: 4× the aging surface, and it breaks the common
-  case where a teammate uses a different agent than whoever ran the skill.
+- Auto-detecting the target agent from the environment. The question is always asked, never
+  inferred — that inference is precisely what P1 was.
+
+## Accepted risks
+
+**Native mode is not portable, by design.** A Claude-native scaffold is invisible to Codex and
+Antigravity. This was weighed against the alternative — one portable layout for everyone — and
+native was chosen deliberately: for a single-agent project, portability buys nothing and costs the
+agent's real capabilities (`.claude/rules/` path-scoping, hooks, `/doctor`'s trim check). The
+plurality fallback in C7 covers mixed-agent teams, and C1/C2 make switching a clean re-run rather
+than a manual migration.
+
+**Per-agent knowledge is the fastest-aging content in the repo,** and this change increases how much
+of it the skill depends on. `SKILL.md:23` went stale within one release. C10 is the mitigation:
+all of it lives in `references/agent-profiles.md` behind an explicit verify-before-trusting header,
+and `SKILL.md` points rather than duplicates.
 
 ## Testing
 
@@ -241,7 +327,10 @@ case where each new rule clearly fires and one where it clearly does not.
 | User defers the theme | No `design-system.md`; pending block at top of `AGENTS.md`; `Status: Pending` entry in `decisions.md`; Step 5 lists it |
 | User answers every question | No pending section anywhere — the block does not appear empty |
 | Re-run with a pending decision on file | It is surfaced first, with the option to keep it parked |
-| Target = generic | `CLAUDE.md` still generated |
-| Target = Codex only | `CLAUDE.md` loader still generated (unconditional); commands near the top of `AGENTS.md`; no `## Claude Code specific` section |
-| Target = Claude Code + Codex | Size ceiling is the stricter of the two; both adapters applied |
-| Monorepo scaffold | Nested `AGENTS.md` carries content; nested `CLAUDE.md` is the loader plus routing echo |
+| Target = Claude Code alone | Content in root `CLAUDE.md`; **no `AGENTS.md` generated**; `.claude/rules/` offered only if path-scoped content exists; auto-memory promotion line present |
+| Target = Codex alone | Content in `AGENTS.md`; **no `CLAUDE.md` generated**; commands near the top |
+| Target = generic | Portable core: `AGENTS.md` + `CLAUDE.md` containing `@AGENTS.md` |
+| Target = Claude Code + Codex | Portable core, **not** native — plurality forces the fallback; size ceiling is the stricter of the two |
+| Claude-native monorepo | Nested `CLAUDE.md` carries subsystem content; critical rules remain in root `CLAUDE.md`, not pushed into `.claude/rules/` |
+| Portable-mode monorepo | Nested `AGENTS.md` carries content; nested `CLAUDE.md` is the loader plus routing echo |
+| Re-run switching Claude-only → +Codex | Existing `CLAUDE.md`-as-content is migrated to `AGENTS.md` with a loader, not left orphaned |
