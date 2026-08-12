@@ -10,3 +10,6 @@ Thumbs.db
 
 # Superpower skill folders
 docs/superpowers/
+
+# SDD scratch workspace
+.superpowers/
