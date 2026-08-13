@@ -27,7 +27,7 @@ Turns a plan into the actual files a coding agent needs to work correctly — no
 ## Workflow
 
 ### Step 0 — Check for an existing scaffold
-- Look for `AGENTS.md`, `CLAUDE.md`, or `docs/*.md` at the target path. If any exist, this is a **re-run**, not a fresh scaffold — say so, name what you found, and state that its contents will be re-confirmed rather than assumed.
+- Look for `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, or `docs/*.md` at the target path. If any exist, this is a **re-run**, not a fresh scaffold — say so, name what you found, and state that its contents will be re-confirmed rather than assumed.
 - If a previous run left pending decisions, surface those first: "last time you parked [X] — decide now, or keep it parked?"
 - Never infer the target agent from which files exist. The layout is a product of a previous answer; treating it as evidence makes that answer self-confirming forever.
 
@@ -115,3 +115,5 @@ Then pick the **linked docs**, which are identical in every layout. Don't genera
 ## Reference files
 - `references/best-practices.md` — the research and reasoning behind the size limits, ordering rules, and doc-vs-skill split. Read this if the user asks "why," or a structural judgment call comes up that isn't covered above.
 - `references/templates.md` — skeleton structure for each file type (AGENTS.md, decisions.md, roadmap.md, product.md, architecture.md, design-system.md). Read this in Step 4 before drafting.
+- `references/agent-profiles.md` — what each target agent reads and how, with sources and verified-on dates. Read this before Step 3, and before asserting any agent behavior anywhere.
+- `references/recommendation-heuristics.md` — grounded defaults for stack, database/caching, and UI choices. Read this in Step 2 before recommending one.
