@@ -7,6 +7,7 @@ Thanks for considering a contribution. This skill is small on purpose — most u
 - **`SKILL.md`** — the workflow itself: when the skill triggers, how the interview works, how structure is decided, how content gets drafted and written. Changes here affect behavior directly, so keep edits scoped and explain the reasoning in the PR description.
 - **`references/best-practices.md`** — the research and reasoning behind the size limits, ordering rules, and doc-vs-skill split. If you're proposing a change to `SKILL.md`'s rules, the backing reasoning (or a correction to outdated reasoning) belongs here.
 - **`references/recommendation-heuristics.md`** — stack/database/caching/UI defaults the skill proposes during its interview. **This file is expected to age** — tooling and best practices shift. If something here is outdated, that's a welcome PR, not a bug report.
+- **`references/agent-profiles.md`** — what each coding agent reads and how it loads it. **This file is expected to age**, like the heuristics file, and every claim carries a source URL and verified-on date. A stale entry is a welcome PR. Never add a row you can't cite from that agent's own docs.
 - **`references/templates.md`** — the skeleton structure for each generated doc type.
 
 ## Reporting an outdated recommendation
@@ -23,11 +24,12 @@ There's no automated test suite — this is a markdown-based skill, not code. To
 1. Run the skill against a small sample plan (a paragraph describing a hypothetical project is enough) and check that the interview questions and generated structure make sense.
 2. Try at least one case where your change should clearly kick in, and one where it clearly shouldn't, to make sure the trigger condition is specific enough.
 3. If you're changing `SKILL.md` itself, re-read it end to end afterward — it's meant to stay short, so a change that grows it significantly should come with something else trimmed.
+4. Run the relevant scenarios from `examples/test-scenarios.md`, including at least one "must NOT produce" case — a rule that fires when it shouldn't is as broken as one that never fires.
 
 ## Style
 
-- Bullet-point imperatives over prose paragraphs, consistent with how the skill asks generated `AGENTS.md` files to be written.
-- No placeholder or TODO content in what ships — if something's unfinished, leave it out rather than stubbing it in.
+- Bullet-point imperatives over prose paragraphs, consistent with how the skill asks generated instruction files (`AGENTS.md`, `CLAUDE.md`) to be written.
+- No placeholder or TODO content in what ships — if something's unfinished, leave it out rather than stubbing it in. One carve-out: a dated pending-decision entry (`undecided as of YYYY-MM-DD`, plus what to do meanwhile) asserts a real current fact and is required output when a user defers a choice — that's not a placeholder.
 - Keep `SKILL.md` itself lean; anything that needs more than a few lines of explanation probably belongs in `references/` instead, linked from the relevant step.
 
 ## Code of conduct

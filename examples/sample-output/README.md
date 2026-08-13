@@ -7,13 +7,17 @@ This is intentionally a *small* example. A multi-subsystem project (e.g. a nativ
 ```
 sample-output/
 ├── AGENTS.md
-├── CLAUDE.md      # thin @AGENTS.md import — generated because Claude Code was a target agent
+├── CLAUDE.md      # @AGENTS.md import plus a routing echo — generated because Claude Code was a target agent
 └── docs/
     ├── decisions.md
     ├── roadmap.md
     └── product.md
 ```
 
-`CLAUDE.md` here is a single line: `@AGENTS.md`. That's the whole file, and it's complete as-is — there was nothing Claude-Code-specific to add on top. It exists because Claude Code's context loading is CLAUDE.md-centric and won't reliably read a bare AGENTS.md without an opt-in setting, so the import is what makes the docs load. AGENTS.md stays the single source of truth. In a monorepo, each nested `<subsystem>/AGENTS.md` gets the same one-line companion beside it.
+`CLAUDE.md` here is the `@AGENTS.md` import plus a short visible routing echo — see the actual file for the exact text. It exists because Claude Code does not read AGENTS.md at all, so the `@AGENTS.md` import is what makes the docs load. AGENTS.md stays the single source of truth. In a monorepo, each nested `<subsystem>/AGENTS.md` gets the same loader companion beside it.
+
+**This is the portable layout, not the only one.** It's generated whenever the target is a generic or multi-agent project — two or more agents, or the agent wasn't named. Two other layouts exist for narrower targets:
+- **Claude-Code-only project:** this same content goes directly into `CLAUDE.md`. No `AGENTS.md` is generated — Claude Code doesn't read it, so a separate copy would just be a second file to keep in sync.
+- **Codex-only project:** this same content goes into `AGENTS.md`, which Codex reads natively. No `CLAUDE.md` is generated — nothing in this scenario reads it.
 
 Note there's no `docs/architecture.md` or `docs/design-system.md` in this example — the skill didn't generate them because a small single-repo CRUD app didn't have enough architectural complexity or UI-specific design conventions to warrant a dedicated doc. That's the "only what's warranted" behavior working as intended, not an omission.

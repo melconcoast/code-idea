@@ -35,3 +35,22 @@ If a more specialized skill for a sub-domain is available (e.g. a frontend/UI de
 - Match component density and layout gravity to who's actually using that screen and on what device — a screen used by a business owner at a desk tolerates (and benefits from) more density than a screen used by a customer on a phone in a hurry.
 - Reuse the same interaction pattern for the same kind of decision throughout the product (e.g. one consistent way of presenting a small set of mutually exclusive choices) rather than inventing a new pattern per screen.
 - State explicitly which icon set / component library is standardized on, once decided — prevents an agent (or a future contributor) from mixing icon libraries or component styles across screens later.
+
+## Naming conventions
+
+Recommend, don't ask — same pattern as the rest of this file. A user without strong opinions should
+get a defensible default, not a blank prompt.
+
+- **Database tables/columns:** plural snake_case tables, singular snake_case columns
+  (`cake_orders.customer_id`). Exception: follow the ORM's convention when it's opinionated enough
+  that fighting it costs more than it's worth.
+- **API routes:** plural nouns, no verbs (`/orders`, `/orders/{id}/items`). Verbs go in the method.
+  Exception: genuinely non-CRUD actions read better as `/orders/{id}/cancel` than as a PATCH with a
+  magic field.
+- **Files:** match the ecosystem rather than imposing one — kebab-case in JS/TS, snake_case in
+  Python and Go, PascalCase for component files in React codebases that already do that.
+- **Booleans:** `is_`/`has_`/`can_` prefix. Ambiguous names like `status` on a two-state field cause
+  real bugs when an agent guesses the polarity. Exception: match the existing convention when a codebase already has one — consistency beats the prefix.
+
+Only write these into `docs/conventions.md` when they go beyond what a linter or formatter already
+enforces — a rule the tooling checks doesn't need restating to an agent.

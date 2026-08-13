@@ -1,6 +1,17 @@
 # Templates
 
-Skeletons for each file type. Fill every bracketed placeholder with the project's real specifics before writing the final file — never ship a template with placeholder text still in it. Omit any section that has nothing real to say rather than leaving it as a stub.
+Skeletons for each file type. Fill every bracketed placeholder with the project's real specifics
+before writing the final file — never ship a template with placeholder text still in it. Omit any
+section that has nothing real to say rather than leaving it as a stub.
+
+**One carve-out.** A dated pending-decision entry is not placeholder content. A placeholder is
+unfilled template text (`[Project name]`, `TODO`) that asserts nothing. A pending-decision entry
+asserts a real, current fact — this is undecided, as of this date, here's what to do instead — and is
+required whenever the user defers a choice. Ship it.
+
+**Layer 1 vs Layer 2.** Which file holds the content depends on the target agent — see
+`agent-profiles.md`. What that content *says* does not. The `docs/*.md` skeletons below are identical
+in every mode.
 
 ---
 
@@ -15,6 +26,19 @@ Skeletons for each file type. Fill every bracketed placeholder with the project'
 - [Highest-priority, most-likely-to-be-violated rule — e.g. a business/pricing rule, a security boundary]
 - [Next most important rule]
 
+## Pending decisions — do not resolve these yourself
+- **[What's undecided]**: undecided as of [YYYY-MM-DD]. [What to do meanwhile — the concrete
+  fallback behavior, e.g. "use unstyled/default components; do NOT pick a palette or font."]
+  Ask before [the action this blocks]. → `docs/decisions.md`
+
+  (Link the file, not a heading anchor — anchors derived from a dated title break silently if the title or date ever changes.)
+```
+
+> Omit this section entirely when nothing is deferred. Never ship it empty. It sits directly after
+> Critical rules because a deferred decision is a rule — an agent that scrolls past it will invent an
+> answer, which is the exact failure it exists to prevent.
+
+```markdown
 ## Commands
 - Install: `[command]`
 - Dev/run: `[command]`
@@ -44,24 +68,120 @@ See `docs/architecture.md` for the full system design.
 
 ---
 
-## CLAUDE.md (root and each nested subsystem, whenever Claude Code is a target agent)
+## `## Maintaining these docs` (every mode)
 
-A single import line is a complete, valid file — ship exactly this when there's nothing Claude-specific to add:
+Goes in whichever file holds the content. Base version:
+
+```markdown
+## Maintaining these docs
+- New rules, commands, and conventions → this file.
+- New decisions → `docs/decisions.md` (append-only). Current business rules → `docs/product.md`.
+- Recurring step-by-step procedures → a skill, not this file.
+```
+
+Claude Code native mode adds one line, because auto memory is machine-local and never committed:
+
+```markdown
+- If something useful landed in auto memory (`/memory`), promote it here so the team gets it.
+```
+
+When a rules directory was generated, the routing becomes a three-way decision so every *future*
+rule follows the structure instead of defaulting back into the content file:
+
+```markdown
+- **Critical rules → this file**, never `.claude/rules/`. Path-scoped rules don't survive `/compact`.
+- **Rules that apply only to certain paths → `.claude/rules/<topic>.md`**, one topic per file, with
+  `paths:` frontmatter.
+- **Everything else → this file.**
+```
+
+Omit these three lines entirely when no rules directory exists — they'd point at a folder that isn't
+there.
+
+Portable mode (two or more agents, or generic) adds the loader routing:
+
+```markdown
+- All rules live in THIS file. `CLAUDE.md` is a loader only — never add content to it.
+- Nested subsystems: edit `<subsystem>/AGENTS.md`, never `<subsystem>/CLAUDE.md`.
+```
+
+---
+
+## CLAUDE.md
+
+Its role depends on the mode — see `agent-profiles.md`.
+
+**Portable mode** (two or more agents, or generic) — `CLAUDE.md` is a loader. The import plus a short
+visible echo of the routing rule:
 
 ```markdown
 @AGENTS.md
+
+## Maintaining these docs
+- Do NOT add content to this file. It exists only so Claude Code loads `AGENTS.md`.
+- New rules and conventions → `AGENTS.md`. New decisions → `docs/decisions.md`.
 ```
 
-The section below is optional scaffolding, appended only if there's genuinely something extra. Never add it empty or with a placeholder:
+The echo must be visible markdown. Block-level HTML comments are stripped before entering Claude's
+context, so a comment here would be invisible to the agent.
+
+Append `## Claude Code specific` only when there is genuinely something extra — subagent conventions,
+permitted tools. Never add it empty.
+
+**Claude Code native mode** (Claude Code is the only target) — `CLAUDE.md` *is* the content file. Use
+the root content skeleton above verbatim, with `## Maintaining these docs` in its native-mode form.
+No `AGENTS.md` is generated.
+
+The nested `<subsystem>/CLAUDE.md` is a loader one-liner in portable mode, and holds the subsystem's
+content in native mode.
+
+---
+
+## Rules directories (only when a rules directory is warranted)
+
+Generated only when there's genuinely path-scoped content — a monorepo, or a subsystem with distinct
+conventions. When one is generated, the content file's `## Maintaining these docs` section **must**
+carry the three-way routing rule, or the next rule added goes into the content file and the
+directory goes vestigial.
+
+### `.claude/rules/<topic>.md` (Claude Code)
+
+One topic per file, named for the topic — `api.md`, `testing.md`, `migrations.md`:
 
 ```markdown
-@AGENTS.md
+---
+paths:
+  - "src/api/**/*.ts"
+---
 
-## Claude Code specific
-- [Anything genuinely specific to Claude Code — subagent conventions, permitted tools, etc. Keep this section short; if it's not Claude-specific, it belongs in AGENTS.md instead.]
+# [Topic] rules
+
+- [Rule that applies only to files matching the paths above]
 ```
 
-The nested `<subsystem>/CLAUDE.md` is the same bare one-liner, importing that subsystem's sibling `AGENTS.md`. All real content stays in AGENTS.md.
+Three failure modes to avoid, all of them silent:
+
+- **Omitting `paths` doesn't error.** It makes the rule load every session at the same priority as
+  the content file. If that's what's wanted, put the rule in the content file instead — a rules file
+  with no `paths` is just a confusing way to write a global rule.
+- **An invalid `[`** that can't be parsed as a bracket expression matches nothing, so the rule never
+  fires. Escape a literal bracket as `\[`.
+- **Brace expansion multiplies.** A rule's whole `paths` list shares a budget of 1,000 expanded
+  patterns; `{a,b}/{c,d}/*.{ts,tsx}` is already 8. A pattern over budget is used unexpanded and its
+  literal braces match no files.
+
+Never put a critical rule here. Path-scoped rules are not re-injected after `/compact` — they reload
+only when Claude next reads a matching file, so a critical rule placed here silently vanishes
+mid-session.
+
+### `.agents/rules/<topic>.md` (Antigravity)
+
+Plain markdown, one topic per file, 12,000 characters maximum per file.
+
+**Do not add `paths:` frontmatter here.** The location and the size limit are verified; per-file
+path-scoping syntax is not. Claude Code's `paths:` field is not known to transfer. If path scoping is
+wanted, verify the syntax against Antigravity's own docs first and add it to `agent-profiles.md` with
+a source — don't infer it from the Claude Code section of this file.
 
 ---
 
@@ -70,7 +190,7 @@ The nested `<subsystem>/CLAUDE.md` is the same bare one-liner, importing that su
 ```markdown
 # Decisions log
 
-Append-only. Each entry is dated and never rewritten — if a decision is later superseded, add a new entry noting that, don't edit the old one.
+*Append-only. Add a new dated entry; never edit or delete a past one. To reverse a decision, add an entry that supersedes it.*
 
 ## [YYYY-MM-DD] — [Decision title]
 **Decision:** [What was decided, one or two lines]
@@ -79,12 +199,29 @@ Append-only. Each entry is dated and never rewritten — if a decision is later 
 **Status:** Accepted
 ```
 
+A deferred decision is recorded the same way, with no rationale yet and the options still open:
+
+```markdown
+## [YYYY-MM-DD] — [Decision title]
+**Decision:** Deferred. Not yet decided.
+**Options on the table:** [The candidates, including the one that would have been recommended]
+**Why deferred:** [One line — e.g. "doesn't block the first slice of work"]
+**Meanwhile:** [What an agent should do until this is settled]
+**Status:** Pending
+```
+
+When it's decided later, append a **new** dated entry with `Status: Accepted` that supersedes this
+one, and remove the matching item from the content file's Pending decisions section. Never edit the
+pending entry in place — the log stays append-only.
+
 ---
 
 ## docs/roadmap.md
 
 ```markdown
 # Roadmap
+
+*Move items between sections rather than deleting them — a deleted "deferred" item loses the record that it was deliberately not built.*
 
 ## MVP scope
 - [Feature/capability that's in for launch]
@@ -103,7 +240,7 @@ Append-only. Each entry is dated and never rewritten — if a decision is later 
 ```markdown
 # Product spec
 
-Current-state business and feature rules. Edit this in place as rules change — this is not a history log (see decisions.md for that).
+*Current state, not history. Edit rules in place; the reasoning behind a change goes in `decisions.md`.*
 
 ## [Feature/domain area]
 - [Rule, formula, or behavior an agent must implement correctly]
@@ -119,6 +256,8 @@ Current-state business and feature rules. Edit this in place as rules change —
 ```markdown
 # Architecture
 
+*Update in the same change as any real design shift. Delete a section you can't keep current — a stale one misleads more than none.*
+
 [System overview — one paragraph plus a component list or diagram description]
 
 ## Components
@@ -129,9 +268,6 @@ Current-state business and feature rules. Edit this in place as rules change —
 
 ## Key constraints
 - [Anything architectural that must not be violated, e.g. "the cloud must never hold a decryptable copy of X"]
-
----
-Keep this file in sync with the actual code. A stale architecture doc is worse than none — update it in the same change as any real design shift, or remove sections that can't be kept current.
 ```
 
 ---
@@ -140,6 +276,8 @@ Keep this file in sync with the actual code. A stale architecture doc is worse t
 
 ```markdown
 # Design system — [subsystem name]
+
+*Every token needs its semantic meaning — what it's reserved for, not just its value. Don't add one without saying when to use it.*
 
 ## Color
 - [Token/class]: [semantic meaning — what it's reserved for, not just what it looks like]
@@ -159,6 +297,32 @@ Keep this file in sync with the actual code. A stale architecture doc is worse t
 ## Accessibility baseline
 - [Minimum touch target, contrast, etc. — only if actually decided]
 ```
+
+---
+
+## docs/conventions.md (only when conventions exceed tooling defaults)
+
+```markdown
+# Conventions
+
+*Add a rule only if a linter or formatter doesn't already enforce it, and give each rule a concrete example.*
+
+## Naming
+- [Entity type]: [the rule, with a concrete example — e.g. "DB tables: plural snake_case, `cake_orders`"]
+
+## File and directory structure
+- [Where a given kind of file goes, and what the name should look like]
+
+## API shape
+- [Route naming, verb usage, response envelope — only if there's a real convention to state]
+
+## Module boundaries
+- [What may import what, and what must not]
+```
+
+Generate this only when there are real conventions beyond what a linter or formatter already
+enforces. A project with nothing but tooling defaults keeps a thin `## Code style` section in the
+content file and gets no separate doc — same rule as every other optional file.
 
 ---
 

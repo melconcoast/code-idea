@@ -1,6 +1,6 @@
 # Product spec
 
-Current-state business and feature rules. Edit this in place as rules change — this is not a history log (see decisions.md for that).
+*Current state, not history. Edit rules in place; the reasoning behind a change goes in `decisions.md`.*
 
 ## Task status
 - Valid states: `todo`, `in_progress`, `done`.
