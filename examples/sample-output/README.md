@@ -14,7 +14,7 @@ sample-output/
     └── product.md
 ```
 
-`CLAUDE.md` here is the `@AGENTS.md` import plus a short visible routing echo — see the actual file for the exact text. It exists because Claude Code's context loading is CLAUDE.md-centric and won't reliably read a bare AGENTS.md without an opt-in setting, so the import is what makes the docs load. AGENTS.md stays the single source of truth. In a monorepo, each nested `<subsystem>/AGENTS.md` gets the same loader companion beside it.
+`CLAUDE.md` here is the `@AGENTS.md` import plus a short visible routing echo — see the actual file for the exact text. It exists because Claude Code does not read AGENTS.md at all, so the `@AGENTS.md` import is what makes the docs load. AGENTS.md stays the single source of truth. In a monorepo, each nested `<subsystem>/AGENTS.md` gets the same loader companion beside it.
 
 **This is the portable layout, not the only one.** It's generated whenever the target is a generic or multi-agent project — two or more agents, or the agent wasn't named. Two other layouts exist for narrower targets:
 - **Claude-Code-only project:** this same content goes directly into `CLAUDE.md`. No `AGENTS.md` is generated — Claude Code doesn't read it, so a separate copy would just be a second file to keep in sync.

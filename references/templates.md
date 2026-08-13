@@ -32,7 +32,13 @@ in every mode.
   Ask before [the action this blocks]. → `docs/decisions.md`
 
   (Link the file, not a heading anchor — anchors derived from a dated title break silently if the title or date ever changes.)
+```
 
+> Omit this section entirely when nothing is deferred. Never ship it empty. It sits directly after
+> Critical rules because a deferred decision is a rule — an agent that scrolls past it will invent an
+> answer, which is the exact failure it exists to prevent.
+
+```markdown
 ## Commands
 - Install: `[command]`
 - Dev/run: `[command]`
@@ -59,10 +65,6 @@ See `docs/architecture.md` for the full system design.
 - `docs/product.md` — current business/feature rules
 - [`docs/design-system.md` — if applicable]
 ```
-
-> Omit this section entirely when nothing is deferred. Never ship it empty. It sits directly after
-> Critical rules because a deferred decision is a rule — an agent that scrolls past it will invent an
-> answer, which is the exact failure it exists to prevent.
 
 ---
 

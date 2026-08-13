@@ -70,6 +70,8 @@ Once installed, just ask naturally — "let's get this ready for Claude Code," "
 ```
 .
 ├── SKILL.md                              # the skill itself
+├── AGENTS.md                             # this repo's own content file
+├── CLAUDE.md                             # @AGENTS.md import, so Claude Code loads it too
 ├── references/
 │   ├── best-practices.md                 # research/reasoning behind the rules
 │   ├── recommendation-heuristics.md      # stack/DB/UI defaults, with sources
@@ -78,7 +80,9 @@ Once installed, just ask naturally — "let's get this ready for Claude Code," "
 ├── examples/
 │   ├── sample-output/                    # example generated file tree
 │   └── test-scenarios.md                 # scenarios a change must be checked against
-└── CONTRIBUTING.md
+├── CONTRIBUTING.md
+├── CHANGELOG.md
+└── LICENSE
 ```
 
 ## Contributing

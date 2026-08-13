@@ -27,7 +27,7 @@ Turns a plan into the actual files a coding agent needs to work correctly — no
 ## Workflow
 
 ### Step 0 — Check for an existing scaffold
-- Look for `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, or `docs/*.md` at the target path. If any exist, this is a **re-run**, not a fresh scaffold — say so, name what you found, and state that its contents will be re-confirmed rather than assumed.
+- Look for a root `AGENTS.md`, `CLAUDE.md`, or `GEMINI.md`, or a `docs/` file matching one of this skill's own generated names (`decisions.md`, `product.md`, `roadmap.md`, `architecture.md`, `conventions.md`, `design-system.md`) at the target path. If any exist, this is a **re-run**, not a fresh scaffold — say so, name what you found, and state that its contents will be re-confirmed rather than assumed.
 - If a previous run left pending decisions, surface those first: "last time you parked [X] — decide now, or keep it parked?"
 - Never infer the target agent from which files exist. The layout is a product of a previous answer; treating it as evidence makes that answer self-confirming forever.
 
@@ -82,7 +82,7 @@ First pick the **layout** from the target agent(s) — this decides which files 
 | Antigravity alone | `AGENTS.md`, or the repo's existing `GEMINI.md` if it has one | `.agents/rules/` only if genuinely path-scoped content exists | `CLAUDE.md`; a second root rules file |
 | Two or more agents, or generic | `AGENTS.md` | `CLAUDE.md` containing `@AGENTS.md`, at root and beside every nested `AGENTS.md` | — |
 
-One named agent gets its native layout; plural or generic gets the portable one. Apply the strictest size limit across all selected agents. Keep critical rules in the root file even in Claude-native mode — nested files and path-scoped rules don't survive `/compact`. See `references/agent-profiles.md`.
+One named agent gets its native layout; plural or generic gets the portable one. Size limits aren't comparable across agents (lines vs. bytes vs. characters) — report each in its own unit; the skill's own ~150-line root-file ceiling is stricter than any native cap in practice, so holding to it satisfies all of them. Keep critical rules in the root file even in Claude-native mode — nested files and path-scoped rules don't survive `/compact`. See `references/agent-profiles.md`.
 
 Then pick the **linked docs**, which are identical in every layout. Don't generate a file nobody needs:
 
@@ -106,14 +106,14 @@ Then pick the **linked docs**, which are identical in every layout. Don't genera
 - If there's filesystem access to the actual project (e.g. running inside Claude Code with a real repo), write the files directly into the correct paths.
 - If running in a chat-only surface without a project filesystem, produce the files as downloadable/presentable content and tell the user exactly which path each one belongs at once they're in their project.
 - If Step 0 found an existing scaffold and the target agent changed, **migrate rather than orphan**: moving content between `CLAUDE.md` and `AGENTS.md`, adding or removing the loader. Propose the moves and get confirmation before writing — migration deletes files. Never drop content that has no home in the new layout; raise it as a question instead.
-- Show the resulting file tree and a short summary of what went where, naming which layout was used and why. List every companion `CLAUDE.md` explicitly with a one-line note that it's a thin `@AGENTS.md` import. List **Pending decisions** as its own section so the user leaves knowing what they parked. Flag anything inferred vs. still uncertain — don't silently guess on business-critical rules.
-- Tell the user how to verify the docs actually load: for Claude Code, run `/context` and check the list under **Memory files**. Warn against running `/import`, which appends a duplicate copy of `AGENTS.md` into `CLAUDE.md`.
+- Show the resulting file tree and a short summary of what went where, naming which layout was used and why. List every companion `CLAUDE.md` explicitly with a one-line note that it's a thin `@AGENTS.md` import. List **Pending decisions** as its own section when any exist, so the user leaves knowing what they parked. Flag anything inferred vs. still uncertain — don't silently guess on business-critical rules.
+- Tell the user how to verify the docs actually load: for Claude Code, run `/context` and check the list under **Memory files**. In portable mode (an `AGENTS.md` exists alongside `CLAUDE.md`), warn against running `/import`, which appends a duplicate copy of `AGENTS.md` into `CLAUDE.md`.
 - Before reporting, check every internal link in the content file resolves to a file that was actually generated. Drop the line rather than shipping a dead link — `design-system.md` is deliberately absent whenever the theme was deferred, so this fires on a common path, not an edge case.
-- Report the content file's size against the strictest limit across the selected agents (see `references/agent-profiles.md`), warning at roughly three-quarters rather than at the limit. This matters most for Codex, where passing 32 KiB doesn't error — it silently stops adding files, dropping the deepest nested guidance first.
+- Report size against each selected agent's own limit, in its own unit — line count for Claude Code, bytes for Codex, characters for Antigravity (see `references/agent-profiles.md`) — warning at roughly three-quarters of any limit. For Codex, report the combined root-plus-nested size against the 32 KiB cap, not just the root: it stops adding files once the *combined* total hits the cap, silently dropping the deepest nested guidance first.
 - Offer to keep going — e.g. drafting a Skill for a recurring procedure surfaced in Step 2, or scaffolding the next subsystem.
 
 ## Reference files
 - `references/best-practices.md` — the research and reasoning behind the size limits, ordering rules, and doc-vs-skill split. Read this if the user asks "why," or a structural judgment call comes up that isn't covered above.
-- `references/templates.md` — skeleton structure for each file type (AGENTS.md, decisions.md, roadmap.md, product.md, architecture.md, design-system.md). Read this in Step 4 before drafting.
+- `references/templates.md` — skeleton structure for each file type (AGENTS.md, CLAUDE.md, rules directories, decisions.md, roadmap.md, product.md, architecture.md, design-system.md, conventions.md). Read this in Step 4 before drafting.
 - `references/agent-profiles.md` — what each target agent reads and how, with sources and verified-on dates. Read this before Step 3, and before asserting any agent behavior anywhere.
 - `references/recommendation-heuristics.md` — grounded defaults for stack, database/caching, and UI choices. Read this in Step 2 before recommending one.

@@ -99,5 +99,5 @@ scenario depends on.
 | ID | Setup | Must produce | Must NOT produce |
 |---|---|---|---|
 | S30 | Fixture A, theme deferred | Every `## Related docs` link resolves to a generated file | A link to `docs/design-system.md`, which was deliberately not generated |
-| S31 | Fixture B, target = Codex | Step 5 reports root file size against the 32 KiB cap | Silence about size on a target whose cap truncates silently |
-| S32 | Fixture B, target = Claude Code + Codex | Size reported against the stricter of the two limits | Reporting against only one agent's limit |
+| S31 | Fixture B, target = Codex | Step 5 reports the combined root-plus-nested size against the 32 KiB cap | Reporting only the root file's size |
+| S32 | Fixture B, target = Claude Code + Codex | Size reported against each agent's own limit, in its own unit (lines, then bytes) | Collapsing the two into a single "stricter" number |
