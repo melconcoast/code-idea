@@ -26,9 +26,17 @@ Turns a plan into the actual files a coding agent needs to work correctly — no
 
 ## Workflow
 
+### Step 0 — Check for an existing scaffold
+- Look for `AGENTS.md`, `CLAUDE.md`, or `docs/*.md` at the target path. If any exist, this is a **re-run**, not a fresh scaffold — say so, name what you found, and state that its contents will be re-confirmed rather than assumed.
+- If a previous run left pending decisions, surface those first: "last time you parked [X] — decide now, or keep it parked?"
+- Never infer the target agent from which files exist. The layout is a product of a previous answer; treating it as evidence makes that answer self-confirming forever.
+
 ### Step 1 — Gather the plan
 - If this conversation already contains a planning/design discussion, extract it directly (architecture, product rules, decisions already made, open questions, tech stack). Don't make the user repeat what they already said.
-- **Tag every extracted fact by source: (a) explicitly stated or confirmed by the user, or (b) proposed by the assistant or produced by a prototype/demo built during the conversation, and never separately confirmed.** Only (a) counts as already known and lets you skip a question in Step 2. Everything in (b) is still an open question no matter how much of the conversation it occupies.
+- **Tag every extracted fact by source: (a) explicitly stated or confirmed by the user; (b) proposed by the assistant or produced by a prototype/demo and never separately confirmed; (c) read from an existing generated doc on disk.** Only (a) counts as known and lets you skip a question in Step 2. Both (b) and (c) are still open questions no matter how settled they look — a doc on disk proves a file was written, not that anyone decided anything, and it may predate the confirmation rules entirely.
+- When re-asking a (c) fact, offer the doc's current value as the recommendation so confirming is one keystroke: "`design-system.md` currently says slate/shadcn — keep it, change it, or park it?"
+- Never silently overwrite content the user clearly hand-wrote. Ask about it.
+- **Never carry a secret out of the plan.** Credentials, tokens, connection strings, private hostnames and IPs, and real customer data are not extracted into any generated file, even when the plan contains them. Substitute a named reference (`DATABASE_URL`, `<internal-host>`); if the value's *shape* matters, describe the shape in `docs/product.md` instead of reproducing the value. This one has no override — these files get committed.
 - If starting fresh, ask the user to paste or describe the plan/idea. A rough idea is enough to start the interview in Step 2 — don't insist on a fully fleshed-out plan first.
 
 ### Step 2 — Interview (this is what makes it dynamic, not templated)
