@@ -101,3 +101,10 @@ scenario depends on.
 | S30 | Fixture A, theme deferred | Every `## Related docs` link resolves to a generated file | A link to `docs/design-system.md`, which was deliberately not generated |
 | S31 | Fixture B, target = Codex | Step 5 reports the combined root-plus-nested size against the 32 KiB cap | Reporting only the root file's size |
 | S32 | Fixture B, target = Claude Code + Codex | Size reported against each agent's own limit, in its own unit (lines, then bytes) | Collapsing the two into a single "stricter" number |
+
+## Platform-limit scenarios
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S33 | Any edit to `SKILL.md`'s frontmatter `description` | Length measured and confirmed at or under 1024 characters | A description over the limit — the skill silently fails to register, so every other scenario becomes unreachable |
+| S34 | S33 trimming a description that is over the limit | Descriptive text cut, all quoted trigger phrases intact | Any trigger phrase shortened or dropped to save characters |
