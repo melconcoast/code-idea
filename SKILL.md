@@ -43,8 +43,9 @@ Turns a plan into the actual files a coding agent needs to work correctly — no
 Ask only what isn't already known from the plan or conversation. Typical questions — adapt freely, don't ask ones you already have answers to:
 - Single app, or multiple subsystems / a monorepo? (This alone determines whether nested per-subsystem files are needed at all — most small projects don't need them.)
 - What does each subsystem do, and what stack does it use?
-- Target coding agent(s)? Content is always AGENTS.md; the answer only decides whether companion `CLAUDE.md` imports get generated alongside it.
+- Which coding agent(s)? Claude Code, Codex, Antigravity, or generic/unsure. This decides the file layout only, never the content — see Step 3. Always ask; never infer it from which files already exist.
 - Is there a frontend/UI subsystem with its own design conventions worth a dedicated design-system doc?
+- Any naming or structural conventions beyond what a linter enforces — table/column naming, API route shapes, module boundaries? (These become `docs/conventions.md`; skip the file when the answer is "just the tooling defaults.")
 - Any business rules, pricing logic, or security/compliance constraints an agent must never quietly change? (These become the highest-priority root-file rules AND get a decisions.md entry.)
 - Writing into an existing repo, or drafting for one that doesn't exist yet?
 - Any procedures likely to recur (testing steps, deployment, local setup) that should become a Skill instead of a doc?
@@ -60,6 +61,10 @@ Ask only what isn't already known from the plan or conversation. Typical questio
 
 - Bad: silently carrying the prototype's UI stack and theme into `design-system.md` because it's "already decided."
 - Good: "The working prototype used [library + theme], but that was partly forced by what the chat artifact sandbox allows — it wasn't a production call. For the real build I'd recommend [grounded recommendation]. Keep the prototype's choice, go with this, or something else?"
+
+**"Decide later" is a third valid answer.** Every recommendation offers three exits — accept, override, or defer — and defer is a legitimate choice, not a failure to answer. Offer it proactively for anything that doesn't block the first slice of work (theme, palette, copy voice): "Go with that, something else, or park it and decide once the scaffold's up?"
+
+A deferred choice produces three things and no guesses: a dated item in the context file's `## Pending decisions` section, a `Status: Pending` entry in `decisions.md`, and *no* doc for the thing that's undecided — a `design-system.md` that's mostly a hole is worse than its absence.
 
 Ground every recommendation in the actual project context (data shape, expected scale, real-time needs, domain) rather than reaching for a generic default — see `references/recommendation-heuristics.md` for starting points on stack/database/caching/UI choices, and lean on a web-search tool if one is available to confirm a recommendation is still current before offering it, since specific tools and best practices shift over time. If the user has already stated a preference or constraint earlier in the conversation, don't re-litigate it — just confirm and move on.
 
