@@ -29,7 +29,9 @@ in every mode.
 ## Pending decisions — do not resolve these yourself
 - **[What's undecided]**: undecided as of [YYYY-MM-DD]. [What to do meanwhile — the concrete
   fallback behavior, e.g. "use unstyled/default components; do NOT pick a palette or font."]
-  Ask before [the action this blocks]. → `docs/decisions.md#pending-[slug]`
+  Ask before [the action this blocks]. → `docs/decisions.md`
+
+  (Link the file, not a heading anchor — anchors derived from a dated title break silently if the title or date ever changes.)
 
 ## Commands
 - Install: `[command]`

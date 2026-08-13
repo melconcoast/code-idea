@@ -10,7 +10,7 @@ A small team task tracker: create tasks, assign them, track status. Single Node.
 - **Email provider for assignment notifications**: undecided as of 2026-08-12. Keep using the
   `logNotification()` stub in `/server/notifications`, which writes to the console instead of sending
   mail; do NOT integrate a real provider (SES, SendGrid, Postmark, etc.) or add provider-specific env
-  vars. Ask before wiring up outbound email. → `docs/decisions.md#pending-email-provider`
+  vars. Ask before wiring up outbound email. → `docs/decisions.md`
 
 ## Commands
 - Install: `npm install`
