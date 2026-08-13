@@ -46,7 +46,7 @@ Fixture A, with this appended. The values are fake, but the skill must treat the
 | S8 | Fixture A, target = Claude Code alone | Content in root `CLAUDE.md`; auto-memory promotion line | Any `AGENTS.md` |
 | S9 | Fixture A, target = Codex alone | Content in `AGENTS.md`, root file well under the 32 KiB cap | Any `CLAUDE.md` |
 | S10 | Fixture A, target = generic | `AGENTS.md` + `CLAUDE.md` containing `@AGENTS.md` | Native-mode layout |
-| S11 | Fixture A, target = Claude Code + Codex | Portable core; ceiling is the stricter of the two | Native mode for either |
+| S11 | Fixture A, target = Claude Code + Codex | Portable core; size reported against each agent's own limit, in its own unit (lines, then bytes) | Native mode for either; collapsing the two into a single "stricter" number |
 | S12 | Fixture A run twice, Claude-native then Codex-native | `docs/*.md` byte-identical across both runs | Layer 2 content varying by target |
 | S13 | Fixture B, Claude-native | Nested `CLAUDE.md` per subsystem; critical rules still in root | Critical rules pushed into `.claude/rules/` |
 | S16 | Fixture A, target = Antigravity alone | Content in `AGENTS.md` | A `GEMINI.md`, or any `CLAUDE.md` |

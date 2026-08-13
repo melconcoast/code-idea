@@ -82,7 +82,7 @@ First pick the **layout** from the target agent(s) — this decides which files 
 | Antigravity alone | `AGENTS.md`, or the repo's existing `GEMINI.md` if it has one | `.agents/rules/` only if genuinely path-scoped content exists | `CLAUDE.md`; a second root rules file |
 | Two or more agents, or generic | `AGENTS.md` | `CLAUDE.md` containing `@AGENTS.md`, at root and beside every nested `AGENTS.md` | — |
 
-One named agent gets its native layout; plural or generic gets the portable one. Size limits aren't comparable across agents (lines vs. bytes vs. characters) — report each in its own unit; the skill's own ~150-line root-file ceiling is stricter than any native cap in practice, so holding to it satisfies all of them. Keep critical rules in the root file even in Claude-native mode — nested files and path-scoped rules don't survive `/compact`. See `references/agent-profiles.md`.
+One named agent gets its native layout; plural or generic gets the portable one. Size limits aren't comparable across agents (lines vs. bytes vs. characters) — report each in its own unit; the skill's own ~150-line root-file ceiling still applies to the root file independently of any agent's cap. Keep critical rules in the root file even in Claude-native mode — nested files and path-scoped rules don't survive `/compact`. See `references/agent-profiles.md`.
 
 Then pick the **linked docs**, which are identical in every layout. Don't generate a file nobody needs:
 

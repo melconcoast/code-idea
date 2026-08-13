@@ -101,5 +101,5 @@ Ship the loader even when Claude Code wasn't named. It is one inert line that ev
 ignores, and without it the docs are invisible the moment someone opens the repo in Claude Code —
 the most common way a generic scaffold silently fails.
 
-When several agents are selected, apply the **strictest** limit across them so one file stays valid
-everywhere.
+When several agents are selected, their limits aren't comparable (lines vs. bytes vs. characters) — report
+and respect each selected agent's limit in its own unit.
