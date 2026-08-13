@@ -71,30 +71,45 @@ Ground every recommendation in the actual project context (data shape, expected 
 Prefer short, specific questions. Use an elicitation/multiple-choice tool where the surface supports it and the question fits that shape (a recommendation plus 2–3 alternatives works well there); don't force an open-ended essay prompt when a recommend-and-confirm question would do.
 
 ### Step 3 — Decide the structure (per-project, not fixed)
-Based on the interview, choose which files are actually warranted. Don't generate a file nobody needs — a trivial single-file project needs an AGENTS.md and maybe nothing else. Typical candidates:
+Based on the interview, choose which files are actually warranted. Don't generate a file nobody needs — a trivial single-file project needs one root file and maybe nothing else.
+
+First pick the **layout** from the target agent(s) — this decides which files exist, never what they say:
+
+| Target | Content lives in | Also generate | Don't generate |
+|---|---|---|---|
+| Claude Code alone | `CLAUDE.md` (root) | `.claude/rules/` only if genuinely path-scoped content exists; nested `CLAUDE.md` per subsystem | `AGENTS.md` |
+| Codex alone | `AGENTS.md` | — | `CLAUDE.md` |
+| Antigravity alone | `AGENTS.md`, or the repo's existing `GEMINI.md` if it has one | `.agents/rules/` only if genuinely path-scoped content exists | `CLAUDE.md`; a second root rules file |
+| Two or more agents, or generic | `AGENTS.md` | `CLAUDE.md` containing `@AGENTS.md`, at root and beside every nested `AGENTS.md` | — |
+
+One named agent gets its native layout; plural or generic gets the portable one. Apply the strictest size limit across all selected agents. Keep critical rules in the root file even in Claude-native mode — nested files and path-scoped rules don't survive `/compact`. See `references/agent-profiles.md`.
+
+Then pick the **linked docs**, which are identical in every layout. Don't generate a file nobody needs:
 
 | File | Generate when |
 |---|---|
-| `AGENTS.md` (root) | Always |
-| `CLAUDE.md` (root) | Whenever Claude Code is a confirmed target agent — required for AGENTS.md to load reliably, not conditional on having Claude-specific extras. Content is a bare `@AGENTS.md` import, plus an optional `## Claude Code specific` section only if there's genuinely something extra |
 | `docs/architecture.md` | There's real architectural complexity worth recording — skip for trivial projects |
-| `docs/decisions.md` | Any non-obvious decision has already been made (pricing model, auth approach, protocol choices, etc.) |
+| `docs/decisions.md` | Any non-obvious decision has been made or deferred |
+| `docs/conventions.md` | There are naming/structure rules beyond what a linter enforces — otherwise keep a thin `## Code style` section in the content file |
 | `docs/roadmap.md` | There's a real MVP-vs-later split to protect against scope creep |
-| `docs/product.md` | There are business/feature rules an agent needs to implement correctly (pricing formulas, refund logic, access rules) |
-| `docs/design-system.md` | There's a UI subsystem with real design conventions (palette, components, copy voice) |
-| Nested `<subsystem>/AGENTS.md` | Genuine monorepo where subsystems have materially different conventions — not needed for a single codebase. This holds all nested content, regardless of target agent. |
-| Nested `<subsystem>/CLAUDE.md` | Alongside (never instead of) each nested `AGENTS.md`, whenever Claude Code is a confirmed target agent — same bare `@AGENTS.md` one-liner as the root |
+| `docs/product.md` | There are business/feature rules an agent must implement correctly |
+| `docs/design-system.md` | There's a UI subsystem with real design conventions — **not** when the design decision was deferred |
 
 ### Step 4 — Draft the content
-- Pull the skeleton for each file type from `references/templates.md`, then fill it with the project's actual specifics — never leave placeholder text in the delivered output.
+- Pull the skeleton for each file type from `references/templates.md`, then fill it with the project's actual specifics — never leave placeholder text in the delivered output. The one exception is a dated pending-decision entry, which asserts a real current fact and is required when the user defers.
+- Never write a credential, token, connection string, private hostname/IP, or real customer data into a generated file, even if it's in the plan and even if asked to. Use a named reference (`DATABASE_URL`, `<internal-host>`) and describe the value's shape in `docs/product.md` if an implementer needs it. These files get committed.
 - Keep `decisions.md` entries terse: date, the decision, a one-line rationale, alternatives considered if relevant. Don't editorialize beyond that.
-- Keep `AGENTS.md` content to bullet-point imperatives, not prose paragraphs.
+- Keep the content file (`AGENTS.md` or `CLAUDE.md`, per Step 3's layout) to bullet-point imperatives, not prose paragraphs.
 - Use the project's own terminology (product names, domain vocabulary, language/locale) rather than generic placeholders.
 
 ### Step 5 — Write and confirm
 - If there's filesystem access to the actual project (e.g. running inside Claude Code with a real repo), write the files directly into the correct paths.
 - If running in a chat-only surface without a project filesystem, produce the files as downloadable/presentable content and tell the user exactly which path each one belongs at once they're in their project.
-- Show the resulting file tree and a short summary of what went where. List every companion `CLAUDE.md` explicitly in that tree — root and each nested one — with a one-line note that it's a thin `@AGENTS.md` import added so Claude Code loads the docs, so the user can see it was added and why. Explicitly flag anything inferred vs. anything still uncertain — don't silently guess on business-critical rules; ask instead.
+- If Step 0 found an existing scaffold and the target agent changed, **migrate rather than orphan**: moving content between `CLAUDE.md` and `AGENTS.md`, adding or removing the loader. Propose the moves and get confirmation before writing — migration deletes files. Never drop content that has no home in the new layout; raise it as a question instead.
+- Show the resulting file tree and a short summary of what went where, naming which layout was used and why. List every companion `CLAUDE.md` explicitly with a one-line note that it's a thin `@AGENTS.md` import. List **Pending decisions** as its own section so the user leaves knowing what they parked. Flag anything inferred vs. still uncertain — don't silently guess on business-critical rules.
+- Tell the user how to verify the docs actually load: for Claude Code, run `/context` and check the list under **Memory files**. Warn against running `/import`, which appends a duplicate copy of `AGENTS.md` into `CLAUDE.md`.
+- Before reporting, check every internal link in the content file resolves to a file that was actually generated. Drop the line rather than shipping a dead link — `design-system.md` is deliberately absent whenever the theme was deferred, so this fires on a common path, not an edge case.
+- Report the content file's size against the strictest limit across the selected agents (see `references/agent-profiles.md`), warning at roughly three-quarters rather than at the limit. This matters most for Codex, where passing 32 KiB doesn't error — it silently stops adding files, dropping the deepest nested guidance first.
 - Offer to keep going — e.g. drafting a Skill for a recurring procedure surfaced in Step 2, or scaffolding the next subsystem.
 
 ## Reference files
