@@ -21,6 +21,9 @@ conventions, UI, business rules) is identical across every agent; see `templates
   file is touched.
 - **Imports:** `@path` syntax. Relative paths resolve against the file containing the import, not the
   working directory. Max depth four hops.
+- **Nested loader consequence:** a `<subsystem>/CLAUDE.md` containing `@AGENTS.md` loads that
+  subsystem's `AGENTS.md` — the nested `CLAUDE.md` loads on demand (see Nested, above) and its
+  `@` import resolves against its own directory (see Imports, above).
 - **Enforcement:** `CLAUDE.md` is context, not configuration. A rule that must hold regardless of
   what the agent decides belongs in a `PreToolUse` hook.
 - **Verify loading:** run `/context` and check the list under **Memory files**.

@@ -3,7 +3,7 @@ name: code-idea
 description: Transforms a project plan, idea, or planning conversation into a complete AI-coding-agent-ready documentation set — a lean root context file in whichever format the target agent reads natively (CLAUDE.md for Claude Code, AGENTS.md for Codex/Antigravity, or both for mixed and generic targets), plus linked docs (architecture, decisions, conventions, roadmap, product, design-system) and, for monorepos, nested per-subsystem context files. Dynamically interviews the user to decide the right structure for their specific project rather than applying one fixed template, re-confirms anything not explicitly decided, and supports deferring a choice as a tracked pending decision. Use this skill whenever the user wants to turn a plan/idea into files for Claude Code or another coding agent, says things like "set up AGENTS.md/CLAUDE.md for this", "get this ready for Claude Code", "scaffold the project docs", "turn this plan into context files", "hand this off to a coding agent", or has just finished a substantial planning/design discussion and is about to start building. Also trigger when the user asks how to structure AGENTS.md/CLAUDE.md and wants it actually applied to their project, not just explained in the abstract.
 ---
 
-# Context Scaffolder
+# code-idea
 
 Turns a plan into the actual files a coding agent needs to work correctly — not a lecture on best practices, the files themselves.
 

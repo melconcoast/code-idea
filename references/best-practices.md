@@ -1,4 +1,4 @@
-# Best practices behind Context Scaffolder's rules
+# Best practices behind code-idea's rules
 
 Condensed reasoning for why the skill enforces what it does. Read this when the user asks "why," or when a structural judgment call isn't covered directly in SKILL.md.
 
