@@ -50,7 +50,7 @@ get a defensible default, not a blank prompt.
 - **Files:** match the ecosystem rather than imposing one — kebab-case in JS/TS, snake_case in
   Python and Go, PascalCase for component files in React codebases that already do that.
 - **Booleans:** `is_`/`has_`/`can_` prefix. Ambiguous names like `status` on a two-state field cause
-  real bugs when an agent guesses the polarity.
+  real bugs when an agent guesses the polarity. Exception: match the existing convention when a codebase already has one — consistency beats the prefix.
 
 Only write these into `docs/conventions.md` when they go beyond what a linter or formatter already
 enforces — a rule the tooling checks doesn't need restating to an agent.
