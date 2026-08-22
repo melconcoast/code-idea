@@ -7,9 +7,3 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
-
-# Superpower skill folders
-docs/superpowers/
-
-# SDD scratch workspace
-.superpowers/
