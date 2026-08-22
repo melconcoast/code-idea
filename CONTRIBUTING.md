@@ -9,7 +9,7 @@ The repo is a Claude Code plugin. Each skill owns a directory under `skills/`, h
 deliberately unbuilt, `plan-module` and `execute-plan`; neither gets a directory until it is written,
 because git can't track an empty directory and a stub `SKILL.md` registers a broken skill for everyone.
 
-- **`.claude-plugin/plugin.json`** and **`marketplace.json`** — the plugin manifest, and the entry that makes this repo its own marketplace. Both carry a version that must match the release tag; CI enforces the first.
+- **`.claude-plugin/plugin.json`** and **`marketplace.json`** — the plugin manifest, and the entry that makes this repo its own marketplace (named `melconcoast`, after the owner, so installs read `code-idea@melconcoast`). The version lives in `plugin.json` only and must match the release tag; CI enforces it.
 - **`skills/scaffold/SKILL.md`** — the workflow itself: when the skill triggers, how the interview works, how structure is decided, how content gets drafted and written. Changes here affect behavior directly, so keep edits scoped and explain the reasoning in the PR description.
 - **`skills/scaffold/references/best-practices.md`** — the research and reasoning behind the size limits, ordering rules, and doc-vs-skill split. If you're proposing a change to the skill's rules, the backing reasoning (or a correction to outdated reasoning) belongs here.
 - **`skills/scaffold/references/recommendation-heuristics.md`** — stack/database/caching/UI defaults the skill proposes during its interview. **This file is expected to age** — tooling and best practices shift. If something here is outdated, that's a welcome PR, not a bug report.
