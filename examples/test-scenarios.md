@@ -47,7 +47,7 @@ Fixture A, with this appended. The values are fake, but the skill must treat the
 | S9 | Fixture A, target = Codex alone | Content in `AGENTS.md`, root file well under the 32 KiB cap | Any `CLAUDE.md` |
 | S10 | Fixture A, target = generic | `AGENTS.md` + `CLAUDE.md` containing `@AGENTS.md` | Native-mode layout |
 | S11 | Fixture A, target = Claude Code + Codex | Portable core; size reported against each agent's own limit, in its own unit (lines, then bytes) | Native mode for either; collapsing the two into a single "stricter" number |
-| S12 | Fixture A run twice, Claude-native then Codex-native | `docs/*.md` byte-identical across both runs | Layer 2 content varying by target |
+| S12 | Fixture A run twice, Claude-native then Codex-native | `docs/*.md` byte-identical across both runs, **`development-roadmap.md` included — same module and sub-module ids, same order, same `Status` values** | Layer 2 content varying by target |
 | S13 | Fixture B, Claude-native | Nested `CLAUDE.md` per subsystem; critical rules still in root | Critical rules pushed into `.claude/rules/` |
 | S16 | Fixture A, target = Antigravity alone | Content in `AGENTS.md` | A `GEMINI.md`, or any `CLAUDE.md` |
 | S17 | Fixture A, target = Antigravity, repo already has `GEMINI.md` | Content written into the existing `GEMINI.md` | A second root rules file alongside it |
@@ -68,6 +68,24 @@ Fixture A, with this appended. The values are fake, but the skill must treat the
 | S22 | Any run generating `docs/*.md` | Every generated doc carries its extension rule directly under the H1 | A doc with no extension rule; a rule in a footer |
 | S23 | S22's output | The rule is a single italic line | A `## Maintaining` section inside a `docs/*.md` file |
 | S24 | Fixture A, user defers the theme | `decisions.md` extension rule present even though the only entry is `Status: Pending` | A pending-only decisions log with no append-only rule |
+
+## Development-roadmap scenarios
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S35 | Fixture A, trivial scope, user articulates no MVP-vs-later split | `docs/development-roadmap.md` generated anyway, with real module/sub-module blocks reflecting a decomposition confirmed in Step 2 | Skipping the file because "there's no real split"; a single `Module 1 — build the app` block that just restates the project title |
+| S36 | Any run generating `docs/development-roadmap.md` | `## Module <n>` blocks holding `### Sub-Module <n>.<m>` blocks, each carrying `Status`, `In scope`, `Out of scope`, `Tasks`, in dependency order | A `## MVP scope` flat list; a sub-module missing any field |
+| S37 | Fixture B, a rich planning conversation with plenty of implementation detail available | Sub-modules stop at scope boundaries, every one reading `**Tasks:** not yet planned` | Any task table, task rows, or invented implementation detail at scaffold time |
+| S38 | Fixture A, user drops a sub-module mid-interview | That block stays in place with `Status: dropped` and a one-line reason | The block deleted; the sub-module demoted into `## Deferred` as a bullet |
+| S39 | Fixture B | Every `Depends on:` names `none`, an id with a block in the same file, or an explicitly named external blocker | A `Depends on:` pointing at a module or sub-module id that has no block |
+| S40 | Fixture C, an existing pre-3.0 `docs/roadmap.md` in the old three-list format | The rename to `docs/development-roadmap.md` and the conversion proposed, with what-maps-where shown, before anything is written | A silent rewrite; both files left side by side |
+
+## Interview scenarios
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S41 | Fixture B (three subsystems, different owners) | A specific module/sub-module decomposition proposed *with* its dependency order — "Module 1 ingest API, then Module 2 device agent, since the agent needs somewhere to report to. Take it, or reorder?" | An open-ended "how would you like to break this into modules?"; a decomposition with no ordering |
+| S42 | Fixture A, one assistant message bundling a stack recommendation, a module decomposition, and the target-agent question; user replies "sounds good" | Each of the three re-confirmed individually before any is written as settled | Any of the three written as settled on the strength of the single blanket reply |
 
 ## Convention scenarios
 
@@ -93,6 +111,8 @@ scenario depends on.
 |---|---|---|---|
 | S28 | "get this ready for Claude Code" / "scaffold the project docs" / "turn this plan into context files" / "hand this off to a coding agent" | The skill fires on each | Silence on any of them |
 | S29 | "how does AGENTS.md work?" — abstract question, no project in play | An explanation | A scaffold, or an interview |
+| S43 | "plan the next module" / "build task 3" / "execute the plan", against a repo that already has a scaffold | Silence, or an explicit hand-off | `scaffold` firing and re-scaffolding a repo that already has docs |
+| S44 | S28's four trigger phrases, re-run after any anti-trigger edit | All four still fire | A positive trigger lost as collateral damage from an anti-trigger |
 
 ## Output-integrity scenarios
 

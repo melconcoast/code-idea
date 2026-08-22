@@ -2,7 +2,7 @@
 
 *"Code this idea"* — take a plan or idea from conversation to a state a coding agent can actually build from correctly.
 
-A Claude Skill that turns a project plan, idea, or planning conversation into a complete, AI-coding-agent-ready documentation set — a lean root context file in whichever format your target agent reads natively (`CLAUDE.md` for Claude Code, `AGENTS.md` for Codex or Antigravity, or both for mixed/generic targets), plus linked docs (architecture, decisions, conventions, roadmap, product, design-system), and, for monorepos, nested per-subsystem context files.
+A Claude Code **plugin**. Its `scaffold` skill turns a project plan, idea, or planning conversation into a complete, AI-coding-agent-ready documentation set — a lean root context file in whichever format your target agent reads natively (`CLAUDE.md` for Claude Code, `AGENTS.md` for Codex or Antigravity, or both for mixed/generic targets), plus linked docs (architecture, decisions, conventions, development roadmap, product, design-system), and, for monorepos, nested per-subsystem context files.
 
 It doesn't apply one fixed template. It interviews you (or reads the plan straight out of your conversation) to figure out what your specific project actually needs, proposes grounded recommendations for anything you don't have a strong opinion on — tech stack, database/caching choice, UI theme and typography — and lets you confirm or override each one.
 
@@ -12,7 +12,7 @@ Most "let's add a CLAUDE.md" moments end one of two ways: a single giant file wi
 
 ## What it generates
 
-The **container** — which root file(s) exist and how they load — depends on which agent(s) you target; see [`references/agent-profiles.md`](references/agent-profiles.md) for the sourced facts behind each row:
+The **container** — which root file(s) exist and how they load — depends on which agent(s) you target; see [`references/agent-profiles.md`](skills/scaffold/references/agent-profiles.md) for the sourced facts behind each row:
 
 | Target agent(s) | Root file(s) |
 |---|---|
@@ -28,7 +28,7 @@ The **content** is identical regardless of layout — only what a given project 
 | `docs/architecture.md` | Real architectural complexity worth recording |
 | `docs/decisions.md` | Non-obvious decisions have been made (append-only, dated, rationale-first) |
 | `docs/conventions.md` | Naming/structural rules beyond what a linter enforces |
-| `docs/roadmap.md` | There's a real MVP-vs-later split worth protecting |
+| `docs/development-roadmap.md` | **Always** — modules and sub-modules, in dependency order, with scope boundaries |
 | `docs/product.md` | Business/feature rules an agent needs to implement correctly |
 | `docs/design-system.md` | There's a UI subsystem with real design conventions |
 | Nested `<subsystem>/AGENTS.md` or `<subsystem>/CLAUDE.md` | Genuine monorepo, subsystems with materially different conventions — matches the root layout |
@@ -53,13 +53,22 @@ The **content** is identical regardless of layout — only what a given project 
 - **Stale docs are worse than no docs** — architecture docs must be updated alongside real changes, or removed.
 - **Recurring procedures become Skills**, not static docs.
 
-See [`references/best-practices.md`](references/best-practices.md) for the full reasoning, [`references/recommendation-heuristics.md`](references/recommendation-heuristics.md) for the stack/database/UI defaults it draws on, and [`references/agent-profiles.md`](references/agent-profiles.md) for the sourced per-agent facts behind the container table above.
+See [`references/best-practices.md`](skills/scaffold/references/best-practices.md) for the full reasoning, [`references/recommendation-heuristics.md`](skills/scaffold/references/recommendation-heuristics.md) for the stack/database/UI defaults it draws on, and [`references/agent-profiles.md`](skills/scaffold/references/agent-profiles.md) for the sourced per-agent facts behind the container table above.
 
 ## Installation
 
-**Claude.ai / Claude Desktop / Claude Code:** clone this repo (or download a packaged `.skill` release) and add it as a skill — see [Anthropic's skills documentation](https://docs.claude.com) for the current install path, since this changes over time.
+**Claude Code** — install as a plugin:
 
-**From source:** the skill is just `SKILL.md` plus `references/` — no build step. Point your tool's skill directory at this repo, or copy the two into an existing skills folder.
+```
+/plugin marketplace add melconcoast/code-idea
+/plugin install code-idea@code-idea
+```
+
+Skills are then invoked as `/code-idea:scaffold`, or triggered naturally by what you ask for.
+
+**Claude.ai / Claude Desktop** — download the `scaffold.skill` asset from a [release](https://github.com/melconcoast/code-idea/releases) and add it as a skill.
+
+**From source** — no build step. Point a local marketplace at your clone: `/plugin marketplace add /path/to/code-idea`.
 
 ## Usage
 
@@ -69,21 +78,30 @@ Once installed, just ask naturally — "let's get this ready for Claude Code," "
 
 ```
 .
-├── SKILL.md                              # the skill itself
-├── AGENTS.md                             # this repo's own content file
-├── CLAUDE.md                             # @AGENTS.md import, so Claude Code loads it too
-├── references/
-│   ├── best-practices.md                 # research/reasoning behind the rules
-│   ├── recommendation-heuristics.md      # stack/DB/UI defaults, with sources
-│   ├── agent-profiles.md                 # what each target agent reads and how, with sources
-│   └── templates.md                      # skeleton for each doc type
+├── .claude-plugin/
+│   ├── plugin.json                       # plugin manifest
+│   └── marketplace.json                  # so the repo is its own marketplace
+├── skills/
+│   └── scaffold/
+│       ├── SKILL.md                      # the skill itself
+│       └── references/
+│           ├── best-practices.md         # research/reasoning behind the rules
+│           ├── recommendation-heuristics.md  # stack/DB/UI defaults, with sources
+│           ├── agent-profiles.md         # what each target agent reads and how, with sources
+│           └── templates.md              # skeleton for each doc type
 ├── examples/
 │   ├── sample-output/                    # example generated file tree
 │   └── test-scenarios.md                 # scenarios a change must be checked against
+├── AGENTS.md                             # this repo's own content file
+├── CLAUDE.md                             # @AGENTS.md import, so Claude Code loads it too
 ├── CONTRIBUTING.md
 ├── CHANGELOG.md
 └── LICENSE
 ```
+
+Two further skills are planned for this plugin and are **not built yet**: `plan-module`, which turns
+one sub-module of the development roadmap into a task breakdown, and `execute-plan`, which builds it.
+Neither ships a directory until it is written.
 
 ## Contributing
 

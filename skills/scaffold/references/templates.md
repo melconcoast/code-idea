@@ -61,7 +61,7 @@ See `docs/architecture.md` for the full system design.
 
 ## Related docs
 - `docs/decisions.md` — why non-obvious choices were made
-- `docs/roadmap.md` — what's in scope now vs. deferred
+- `docs/development-roadmap.md` — the module/sub-module breakdown, dependency order, and what's deliberately deferred
 - `docs/product.md` — current business/feature rules
 - [`docs/design-system.md` — if applicable]
 ```
@@ -216,22 +216,64 @@ pending entry in place — the log stays append-only.
 
 ---
 
-## docs/roadmap.md
+## docs/development-roadmap.md
+
+Always generated, including for trivial projects — see `best-practices.md`, "Why the development
+roadmap is always generated." One `## Module <n>` block per module, each holding one or more
+`### Sub-Module <n>.<m>` blocks, in dependency order.
+
+**This file records modules and sub-modules only. It does not contain task tables.** Task-level
+detail is the output of the step that plans a sub-module, and inventing it here — before any code
+exists — produces confident guesses, which is the placeholder failure this whole file forbids.
 
 ```markdown
-# Roadmap
+# Development Roadmap
 
-*Move items between sections rather than deleting them — a deleted "deferred" item loses the record that it was deliberately not built.*
+*One block per module, sub-modules nested under it, in dependency order. A module or sub-module that's dropped keeps its block and becomes `Status: dropped` with a one-line reason — never deleted and never demoted into Deferred, or every `Depends on:` pointing at it dangles.*
 
-## MVP scope
-- [Feature/capability that's in for launch]
+## Module 1 — [Module name]
+**Status:** planned
+**Depends on:** none
+
+### Sub-Module 1.1 — [Sub-module name]
+**Status:** planned
+**In scope:** [the specific capabilities this sub-module delivers]
+**Out of scope:** [what a reader would reasonably assume is here but isn't — and where it went instead]
+**Tasks:** not yet planned
 
 ## Deferred (explicitly out of scope for now)
-- [Feature/capability intentionally NOT being built yet, and why — prevents an agent from scope-creeping into it]
+- [Capability intentionally NOT being built yet, and why — prevents an agent from scope-creeping into it]
 
 ## Open questions
-- [Anything still genuinely undecided]
+- [Anything still genuinely undecided — point at `docs/decisions.md` if it has a Pending entry]
 ```
+
+**`Status` is a closed vocabulary — these five values only**, at both module and sub-module level. A
+free-text status makes the file unusable by the step that reads it.
+
+| Status | Means |
+|---|---|
+| `planned` | Agreed and sequenced, not started |
+| `in progress` | Being built now |
+| `done` | Built and merged |
+| `blocked` | Cannot start; the blocker is named in `Depends on:` |
+| `dropped` | Was planned, deliberately abandoned. Keep the block; state why in `Out of scope:` |
+
+**Identifiers.** Modules are `Module <n>`; sub-modules are `<n>.<m>` and are the addressable unit —
+the planning step operates on one sub-module at a time.
+
+**`Depends on:`** takes `none`, one or more module or sub-module ids with blocks in this same file, or
+a named external blocker (a pending decision, a third-party dependency) — but never an id with no
+block here.
+
+**When tasks are added later, they are plain English and never sample code.** A task line says what
+changes and why it matters, not how to write it. Code in a roadmap goes stale the moment the code
+changes, and a stale doc misleads more than no doc at all.
+
+`## Deferred` and a `dropped` module are not the same thing. Deferred items were never modules —
+they're capability-level scope decisions. A dropped module was scoped and sequenced first, and the
+roadmap keeps that distinction because "we never planned this" and "we planned this and killed it"
+are different facts.
 
 ---
 
