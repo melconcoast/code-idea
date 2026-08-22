@@ -1,8 +1,14 @@
-name: Package and release skill
+name: Package and release skills
 
 # Runs whenever a version tag (v1.0.0, v1.2.3, etc.) is pushed.
-# Packages SKILL.md + references/ into a .skill file (a zip with the
-# skill folder at its root) and attaches it to a GitHub Release.
+# Validates the plugin manifest and every skill's frontmatter, then packages each
+# skills/<name>/ into <name>.skill (a zip with the skill folder at its root) and
+# attaches them to a GitHub Release.
+#
+# The plugin itself is NOT packaged as an archive. Claude Code installs plugins from
+# a marketplace source pinned by git ref, so the tag is the plugin's distribution
+# artifact. The .skill files exist for Claude.ai / Claude Desktop, which do take an
+# uploaded skill folder.
 
 on:
   push:
@@ -12,9 +18,6 @@ on:
 permissions:
   contents: write
 
-env:
-  SKILL_NAME: code-idea
-
 jobs:
   package:
     runs-on: ubuntu-latest
@@ -22,23 +25,80 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Validate SKILL.md has required frontmatter
+      - name: Validate plugin manifest
         run: |
-          head -n 5 SKILL.md | grep -q '^name:' || (echo "SKILL.md is missing a 'name' field in its frontmatter" && exit 1)
-          head -n 5 SKILL.md | grep -q '^description:' || (echo "SKILL.md is missing a 'description' field in its frontmatter" && exit 1)
+          jq -e . .claude-plugin/plugin.json > /dev/null \
+            || (echo "::error::.claude-plugin/plugin.json is not valid JSON" && exit 1)
+          jq -e . .claude-plugin/marketplace.json > /dev/null \
+            || (echo "::error::.claude-plugin/marketplace.json is not valid JSON" && exit 1)
 
-      - name: Package skill
+          tag_version="${GITHUB_REF_NAME#v}"
+          manifest_version=$(jq -r '.version' .claude-plugin/plugin.json)
+          if [ "$manifest_version" != "$tag_version" ]; then
+            echo "::error::plugin.json version ($manifest_version) does not match tag ($tag_version)"
+            exit 1
+          fi
+          echo "plugin.json version $manifest_version matches tag"
+
+      - name: Validate every skill
         run: |
-          mkdir -p "dist/${SKILL_NAME}"
-          cp SKILL.md "dist/${SKILL_NAME}/"
-          cp -r references "dist/${SKILL_NAME}/"
-          cd dist
-          zip -rq "../${SKILL_NAME}.skill" "${SKILL_NAME}"
-          cd ..
-          ls -la "${SKILL_NAME}.skill"
+          found=0
+          for skill_md in skills/*/SKILL.md; do
+            [ -e "$skill_md" ] || continue
+            found=1
+            name=$(basename "$(dirname "$skill_md")")
+            echo "Validating $name"
+
+            grep -q '^name:' "$skill_md" \
+              || (echo "::error file=$skill_md::missing 'name' in frontmatter" && exit 1)
+            grep -q '^description:' "$skill_md" \
+              || (echo "::error file=$skill_md::missing 'description' in frontmatter" && exit 1)
+
+            # The frontmatter name must match the directory, or the skill loads under
+            # a name nothing references.
+            fm_name=$(awk -F': *' '/^name:/{print $2; exit}' "$skill_md")
+            if [ "$fm_name" != "$name" ]; then
+              echo "::error file=$skill_md::frontmatter name '$fm_name' != directory '$name'"
+              exit 1
+            fi
+
+            # Reject a folded/multiline description rather than measuring a partial
+            # line and letting an over-length description through silently.
+            desc=$(awk -F'^description: ' '/^description: /{print $2; exit}' "$skill_md")
+            if [ -z "$desc" ]; then
+              echo "::error file=$skill_md::description must be a single-line 'description: ...' field"
+              exit 1
+            fi
+
+            # wc -m (characters), not wc -c (bytes) — em dashes are 3 bytes each and
+            # byte-counting would fail a description that is actually within the limit.
+            len=$(printf '%s' "$desc" | wc -m | tr -d ' ')
+            echo "  description: $len chars"
+            if [ "$len" -gt 1024 ]; then
+              echo "::error file=$skill_md::description is $len chars, over the 1024 limit — the skill would silently fail to register"
+              exit 1
+            fi
+            if [ "$len" -gt 970 ]; then
+              echo "::warning file=$skill_md::description is $len chars, within 55 of the 1024 limit"
+            fi
+          done
+          [ "$found" = "1" ] || (echo "::error::no skills/*/SKILL.md found" && exit 1)
+
+      - name: Package each skill
+        run: |
+          mkdir -p dist staging
+          for skill_md in skills/*/SKILL.md; do
+            [ -e "$skill_md" ] || continue
+            dir=$(dirname "$skill_md")
+            name=$(basename "$dir")
+            rm -rf "staging/$name" && mkdir -p "staging/$name"
+            cp -R "$dir"/. "staging/$name/"
+            (cd staging && zip -rq "../dist/${name}.skill" "$name")
+          done
+          ls -la dist/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
-          files: ${{ github.workspace }}/${{ env.SKILL_NAME }}.skill
+          files: ${{ github.workspace }}/dist/*.skill
           generate_release_notes: true

@@ -1,6 +1,6 @@
 ---
-name: code-idea
-description: Transforms a project plan, idea, or planning conversation into an AI-coding-agent-ready docs set — a lean root context file in whichever format the target agent reads natively (CLAUDE.md, AGENTS.md, or both), plus linked docs and nested per-subsystem files for monorepos. Interviews the user to pick the right structure, not one fixed template, re-confirms anything not explicitly decided, and supports deferring a choice as a tracked pending decision. Use this skill whenever the user wants to turn a plan/idea into files for Claude Code or another coding agent, says things like "set up AGENTS.md/CLAUDE.md for this", "get this ready for Claude Code", "scaffold the project docs", "turn this plan into context files", "hand this off to a coding agent", or has just finished a substantial planning/design discussion and is about to start building. Also trigger when the user asks how to structure AGENTS.md/CLAUDE.md and wants it actually applied to their project, not just explained in the abstract.
+name: scaffold
+description: Transforms a project plan, idea, or planning conversation into an AI-coding-agent-ready docs set — a lean root context file for the target agent (CLAUDE.md, AGENTS.md, or both), plus linked docs and nested per-subsystem files for monorepos. Interviews to pick the right structure, re-confirms undecided facts, and tracks deferred choices as pending decisions. Use this skill whenever the user wants to turn a plan/idea into files for Claude Code or another coding agent, says things like "set up AGENTS.md/CLAUDE.md for this", "get this ready for Claude Code", "scaffold the project docs", "turn this plan into context files", "hand this off to a coding agent", or has just finished a substantial planning/design discussion and is about to start building. Also trigger when the user asks how to structure AGENTS.md/CLAUDE.md and wants it actually applied to their project, not just explained in the abstract. Not for planning or building a module from an existing roadmap — use plan-module or execute-plan.
 ---
 
 # code-idea
@@ -27,7 +27,7 @@ Turns a plan into the actual files a coding agent needs to work correctly — no
 ## Workflow
 
 ### Step 0 — Check for an existing scaffold
-- Look for a root `AGENTS.md`, `CLAUDE.md`, or `GEMINI.md`, or a `docs/` file matching one of this skill's own generated names (`decisions.md`, `product.md`, `roadmap.md`, `architecture.md`, `conventions.md`, `design-system.md`) at the target path. If any exist, this is a **re-run**, not a fresh scaffold — say so, name what you found, and state that its contents will be re-confirmed rather than assumed.
+- Look for a root `AGENTS.md`, `CLAUDE.md`, or `GEMINI.md`, or a `docs/` file matching one of this skill's own generated names (`decisions.md`, `product.md`, `development-roadmap.md`, `roadmap.md` from before 3.0, `architecture.md`, `conventions.md`, `design-system.md`) at the target path. If any exist, this is a **re-run**, not a fresh scaffold — say so, name what you found, and state that its contents will be re-confirmed rather than assumed.
 - If a previous run left pending decisions, surface those first: "last time you parked [X] — decide now, or keep it parked?"
 - Never infer the target agent from which files exist. The layout is a product of a previous answer; treating it as evidence makes that answer self-confirming forever.
 
@@ -41,23 +41,23 @@ Turns a plan into the actual files a coding agent needs to work correctly — no
 
 ### Step 2 — Interview (this is what makes it dynamic, not templated)
 Ask only what isn't already known from the plan or conversation. Typical questions — adapt freely, don't ask ones you already have answers to:
-- Single app, or multiple subsystems / a monorepo? (This alone determines whether nested per-subsystem files are needed at all — most small projects don't need them.)
-- What does each subsystem do, and what stack does it use?
+- Single app, or multiple subsystems / a monorepo — and if multiple, what does each do and what stack does it use? (This alone determines whether nested per-subsystem files are needed — most small projects don't need them.)
 - Which coding agent(s)? Claude Code, Codex, Antigravity, or generic/unsure. This decides the file layout only, never the content — see Step 3. Always ask; never infer it from which files already exist.
 - Is there a frontend/UI subsystem with its own design conventions worth a dedicated design-system doc?
 - Any naming or structural conventions beyond what a linter enforces — table/column naming, API route shapes, module boundaries? (These become `docs/conventions.md`; skip the file when the answer is "just the tooling defaults.")
 - Any business rules, pricing logic, or security/compliance constraints an agent must never quietly change? (These become the highest-priority root-file rules AND get a decisions.md entry.)
 - Writing into an existing repo, or drafting for one that doesn't exist yet?
 - Any procedures likely to recur (testing steps, deployment, local setup) that should become a Skill instead of a doc?
+- How does this break into modules and sub-modules, and in what order? Propose a specific decomposition with its dependency chain ("Module 1 Infrastructure — 1.1 auth, 1.2 audit logging — then Module 2 Orders, since orders needs a user"), not an open-ended ask. This becomes `docs/development-roadmap.md`.
 
 **Don't leave these as open questions the user has to answer from scratch.** For anything with a genuine best-practice default — tech stack, database/caching choice, monorepo vs. single-repo, UI theme/typography/design pattern — propose a specific, context-grounded recommendation *as part of the question*, and let the user accept it or override it. This matters most for a user without strong opinions on the topic; don't make them invent an answer to a question they came here to avoid having to research themselves.
 
 - Bad: "What database do you want to use?"
 - Good: "For [the order/credit/job data described], I'd recommend Postgres (relational, transactional, handles the credits ledger cleanly) with Redis for the live print-queue/session state. Go with that, or do you have something else in mind?"
-- Bad: "What's your color palette and typography?"
-- Good: "Based on [the domain], I'd suggest [a specific grounded direction, not a generic default] for the palette and pairing. Want me to run with that, or do you already have brand colors/fonts in mind?"
 
 **Silence is not confirmation.** Anything tagged (b) in Step 1 — an assistant proposal, or a choice baked into a prototype/demo — goes through the same recommend-and-confirm pattern before it's written into any doc as settled, even if the user never objected to it at the time. Be explicit about where it came from, especially when the choice was forced by the demo environment rather than chosen on the merits.
+
+**One decision at a time.** Never bundle several recommendations into one message and read a single "sounds good" as confirming all of them — a blanket yes against a bundle confirms nothing. Ask, confirm, then move to the next.
 
 - Bad: silently carrying the prototype's UI stack and theme into `design-system.md` because it's "already decided."
 - Good: "The working prototype used [library + theme], but that was partly forced by what the chat artifact sandbox allows — it wasn't a production call. For the real build I'd recommend [grounded recommendation]. Keep the prototype's choice, go with this, or something else?"
@@ -71,7 +71,7 @@ Ground every recommendation in the actual project context (data shape, expected 
 Prefer short, specific questions. Use an elicitation/multiple-choice tool where the surface supports it and the question fits that shape (a recommendation plus 2–3 alternatives works well there); don't force an open-ended essay prompt when a recommend-and-confirm question would do.
 
 ### Step 3 — Decide the structure (per-project, not fixed)
-Based on the interview, choose which files are actually warranted. Don't generate a file nobody needs — a trivial single-file project needs one root file and maybe nothing else.
+Based on the interview, choose which files are actually warranted. Don't generate a file nobody needs — a trivial single-file project needs one root file, `docs/development-roadmap.md`, and often nothing else.
 
 First pick the **layout** from the target agent(s) — this decides which files exist, never what they say:
 
@@ -84,14 +84,14 @@ First pick the **layout** from the target agent(s) — this decides which files 
 
 One named agent gets its native layout; plural or generic gets the portable one. Size limits aren't comparable across agents (lines vs. bytes vs. characters) — report each in its own unit; the skill's own ~150-line root-file ceiling still applies to the root file independently of any agent's cap. Keep critical rules in the root file even in Claude-native mode — nested files and path-scoped rules don't survive `/compact`. See `references/agent-profiles.md`.
 
-Then pick the **linked docs**, which are identical in every layout. Don't generate a file nobody needs:
+Then pick the **linked docs**, which are identical in every layout. Don't generate a file nobody needs — with one deliberate exception, `development-roadmap.md`, which is always generated because downstream module planning reads it as its input contract (see `references/best-practices.md`):
 
 | File | Generate when |
 |---|---|
 | `docs/architecture.md` | There's real architectural complexity worth recording — skip for trivial projects |
 | `docs/decisions.md` | Any non-obvious decision has been made or deferred |
 | `docs/conventions.md` | There are naming/structure rules beyond what a linter enforces — otherwise keep a thin `## Code style` section in the content file |
-| `docs/roadmap.md` | There's a real MVP-vs-later split to protect against scope creep |
+| `docs/development-roadmap.md` | **Always** — record the Step 2 module/sub-module decomposition and its dependency order, even on a trivial project. Modules and sub-modules only; task-level detail is not invented here |
 | `docs/product.md` | There are business/feature rules an agent must implement correctly |
 | `docs/design-system.md` | There's a UI subsystem with real design conventions — **not** when the design decision was deferred |
 
@@ -105,7 +105,7 @@ Then pick the **linked docs**, which are identical in every layout. Don't genera
 ### Step 5 — Write and confirm
 - If there's filesystem access to the actual project (e.g. running inside Claude Code with a real repo), write the files directly into the correct paths.
 - If running in a chat-only surface without a project filesystem, produce the files as downloadable/presentable content and tell the user exactly which path each one belongs at once they're in their project.
-- If Step 0 found an existing scaffold and the target agent changed, **migrate rather than orphan**: moving content between `CLAUDE.md` and `AGENTS.md`, adding or removing the loader. Propose the moves and get confirmation before writing — migration deletes files. Never drop content that has no home in the new layout; raise it as a question instead.
+- If Step 0 found an existing scaffold and the target agent changed, **migrate rather than orphan**: moving content between `CLAUDE.md` and `AGENTS.md`, adding or removing the loader. Propose the moves and get confirmation before writing — migration deletes files. A pre-3.0 `docs/roadmap.md` migrates the same way: propose the rename to `docs/development-roadmap.md` and the conversion of its flat lists into module/sub-module blocks, show what maps where, and confirm before writing. Never drop content that has no home in the new layout; raise it as a question instead.
 - Show the resulting file tree and a short summary of what went where, naming which layout was used and why. List every companion `CLAUDE.md` explicitly with a one-line note that it's a thin `@AGENTS.md` import. List **Pending decisions** as its own section when any exist, so the user leaves knowing what they parked. Flag anything inferred vs. still uncertain — don't silently guess on business-critical rules.
 - Tell the user how to verify the docs actually load: for Claude Code, run `/context` and check the list under **Memory files**. In portable mode (an `AGENTS.md` exists alongside `CLAUDE.md`), warn against running `/import`, which appends a duplicate copy of `AGENTS.md` into `CLAUDE.md`.
 - Before reporting, check every internal link in the content file resolves to a file that was actually generated. Drop the line rather than shipping a dead link — `design-system.md` is deliberately absent whenever the theme was deferred, so this fires on a common path, not an edge case.
@@ -114,6 +114,6 @@ Then pick the **linked docs**, which are identical in every layout. Don't genera
 
 ## Reference files
 - `references/best-practices.md` — the research and reasoning behind the size limits, ordering rules, and doc-vs-skill split. Read this if the user asks "why," or a structural judgment call comes up that isn't covered above.
-- `references/templates.md` — skeleton structure for each file type (AGENTS.md, CLAUDE.md, rules directories, decisions.md, roadmap.md, product.md, architecture.md, design-system.md, conventions.md). Read this in Step 4 before drafting.
+- `references/templates.md` — skeleton structure for each file type (AGENTS.md, CLAUDE.md, rules directories, decisions.md, development-roadmap.md, product.md, architecture.md, design-system.md, conventions.md). Read this in Step 4 before drafting.
 - `references/agent-profiles.md` — what each target agent reads and how, with sources and verified-on dates. Read this before Step 3, and before asserting any agent behavior anywhere.
 - `references/recommendation-heuristics.md` — grounded defaults for stack, database/caching, and UI choices. Read this in Step 2 before recommending one.

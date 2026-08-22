@@ -67,6 +67,17 @@ Long-context coding agents can silently drop instructions buried in the middle o
 ## Stale docs are worse than no docs
 Architecture overviews that fall out of sync with the actual code don't just fail to help — one study found they *increased* inference cost and led an agent to traverse more files without improving task success, because the agent trusted a description that no longer matched reality. The fix is discipline, not more documentation: update `architecture.md` in the same change as any real architectural shift, or delete the section if it can't realistically be kept current.
 
+## Why the development roadmap is always generated
+Every other doc here is generated only when the project warrants it. "Don't generate a file nobody needs" is a rule, and a hollow doc is worse than an absent one — absence prompts a question, a half-empty file looks answered. `development-roadmap.md` is the single deliberate exception.
+
+It is generated for every project, trivial ones included, because it is not only documentation. It is the input contract for the step that plans a sub-module: the module and sub-module ids, their dependency order, and their scope boundaries are what that step reads to know what "the next piece of work" refers to. A missing roadmap doesn't degrade that step's output — it removes its input entirely. That's a different failure from the one the general rule protects against, and it's why the exception is worth its cost.
+
+The cost is real. On a genuinely small project the roadmap is one module and a couple of sub-modules, which is close to the hollow-doc failure the general rule exists to prevent. It survives that objection on exactly one condition: the blocks record a decomposition the user actually confirmed during the interview, not a restatement of the project title. A roadmap whose only content is "Module 1 — build the app" is a placeholder wearing a heading, and the no-placeholder rule applies to it in full.
+
+This is why the decomposition question is mandatory rather than conditional. The file is always generated, so its content always has to have been decided. Skipping the question and generating the file anyway is the failure mode to watch for, not skipping the file.
+
+The roadmap stops at sub-modules. Task-level detail belongs to the step that plans one sub-module, and only once there is a codebase to plan against — writing tasks during the initial interview means inventing implementation detail nobody has decided yet, which is the same failure in a different costume.
+
 ## What NOT to put in the root file
 Avoid: temporary/one-off task requirements, copied documentation that already exists elsewhere, large code samples, vague advice ("write clean code"), rules a linter or formatter already enforces mechanically, and step-by-step procedures that belong in a reusable Skill instead.
 
