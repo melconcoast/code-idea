@@ -1,6 +1,9 @@
 {
-  "name": "code-idea",
-  "owner": { "name": "Melconcoast Inc", "url": "https://github.com/melconcoast" },
+  "name": "melconcoast",
+  "owner": {
+    "name": "Melconcoast Inc",
+    "url": "https://github.com/melconcoast"
+  },
   "plugins": [
     {
       "name": "code-idea",

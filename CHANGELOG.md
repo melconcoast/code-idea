@@ -70,7 +70,7 @@ with a module/sub-module structure and unconditional generation. Read **Breaking
 1. Remove the old install. If you symlinked or copied this repo into a skills directory, delete it —
    it points at a location that no longer holds a skill.
 2. Install the plugin: `/plugin marketplace add melconcoast/code-idea` then
-   `/plugin install code-idea@code-idea`. For Claude.ai or Claude Desktop, download the
+   `/plugin install code-idea@melconcoast`. For Claude.ai or Claude Desktop, download the
    `scaffold.skill` asset from the release instead; that path is unchanged apart from the filename.
 3. Re-run the skill against existing projects. It detects the scaffold, proposes the roadmap rename
    and migration to the module format, and adds a roadmap to any project that doesn't have one.

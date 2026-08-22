@@ -61,7 +61,7 @@ See [`references/best-practices.md`](skills/scaffold/references/best-practices.m
 
 ```
 /plugin marketplace add melconcoast/code-idea
-/plugin install code-idea@code-idea
+/plugin install code-idea@melconcoast
 ```
 
 Skills are then invoked as `/code-idea:scaffold`, or triggered naturally by what you ask for.
