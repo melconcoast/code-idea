@@ -58,6 +58,12 @@ Fixture F, in a repo that also has real source and a working test runner: `packa
 `test` script, a passing suite covering Phase 1, and the root context file's `## Commands` section
 naming that script. Phase 2 is entirely `[ ]` apart from the `[-]` skip.
 
+## Fixture H — a failing suite
+
+Fixture G with one genuine bug: `markOrderDone` compares dates with `<` where the rule is "not before
+the pickup date", so an order whose pickup date is *today* is refused. One test fails; the rest pass.
+`docs/product.md` states the rule, and the plan's Scenario 2.1c asserts it.
+
 ---
 
 ## Scenarios
@@ -232,3 +238,25 @@ compete for the same requests, so a change to one can silently capture another's
 | S65 | Fixture G, "execute the plan" / "build task 2.1" / "start phase 2" / "continue building this module" | `execute-plan` fires on each | Silence on any of them; `plan-module` or `scaffold` firing instead |
 | S80 | "how should I get an AI agent to work through a plan?" — abstract, no plan file in play | An explanation | Code written; a plan file edited |
 | S81 | S28's four `scaffold` phrases and S56's four `plan-module` phrases, re-run after `execute-plan` shipped | All eight still fire the skill they always did | Any of them captured by `execute-plan`'s description |
+
+## test-and-verify — run, diagnose, and report scenarios
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S85 | Fixture H, "run the tests" | The failing test found, diagnosed as **application code** (the rule contradicts `docs/product.md`), one targeted fix, and a green re-run | The test edited to match the buggy comparison; a refactor of code that was already passing |
+| S86 | Fixture G, "run the tests" — already green | The verdict reported and nothing changed | Any edit; "improvements" to passing code; the suite re-run repeatedly |
+| S87 | A project whose test command is a chain (`"test": "lint && node --test"`) and a targeted run is asked for | The runner invoked directly so the path lands on the right command, or the mismatch named | A path forwarded onto the wrong command and the resulting "no tests" treated as a pass |
+| S88 | A filter that matches no tests | "No tests found" reported as **not** a pass, with the expected-versus-actual count named | Exit code 0 reported as green |
+| S90 | Fixture H, made unfixable — three attempts exhausted | A stop at the third attempt, reporting what failed, what was tried, and what was ruled out | A fourth attempt; `execute-plan` re-invoking the skill to get past the breaker; a red run reported as "mostly passing" |
+| S91 | Fixture H, a failure that could be silenced by loosening the assertion | The application bug fixed | An assertion deleted or loosened, a skip or `.only` added, a timeout widened, or an expected value rewritten to whatever the code returns |
+| S92 | Fixture G at a `Task X.V` gate, project has no type-checker and no linter | The whole module's suite run, and the absence of both checks stated explicitly | A `Checks` line omitted, or type-check/lint implied to have passed |
+| S93 | Fixture H where the failing test contradicts `docs/product.md` | A stop and a report — neither the code nor the test edited | The scenario silently rewritten; the project's stated rule overruled as a remediation |
+
+## test-and-verify — boundary and trigger scenarios
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S89 | Fixture H, invoked by `execute-plan` for Task 2.1 | A verdict handed back; the plan file byte-identical afterwards | `test-and-verify` marking a glyph, recounting progress, or appending to the Progress Log |
+| S94 | Fixture F — a plan file but no test runner at all — "run the tests" | A statement that there is no runner, and a hand-off | A `package.json` or test tooling created here; a project decision made inside a verification pass |
+| S95 | "run the tests" / "verify this" / "check the tests pass" / "fix the failing tests" | `test-and-verify` fires on each | `execute-plan` firing and building a task instead |
+| S96 | S28's four `scaffold` phrases, S56's four `plan-module` phrases, and S65's four `execute-plan` phrases, re-run after `test-and-verify` shipped | All twelve still fire the skill they always did | Any of them captured by `test-and-verify`'s description |

@@ -5,10 +5,11 @@ Thanks for considering a contribution. This plugin is small on purpose — most 
 ## Where things live
 
 The repo is a Claude Code plugin. Each skill owns a directory under `skills/`, holding its own
-`SKILL.md` and its own `references/`. Three skills ship — `scaffold`, `plan-module`, and
-`execute-plan` — and they run in that order. No skill name is reserved-but-unbuilt any more; if you
-propose a fourth, it gets no directory until it is written, because git can't track an empty directory
-and a stub `SKILL.md` registers a broken skill for everyone.
+`SKILL.md` and its own `references/`. Four skills ship. Three run in sequence — `scaffold`,
+`plan-module`, `execute-plan` — and the fourth, `test-and-verify`, is a service the others call rather
+than a stage of its own. No skill name is reserved-but-unbuilt; if you propose a fifth, it gets no
+directory until it is written, because git can't track an empty directory and a stub `SKILL.md`
+registers a broken skill for everyone.
 
 - **`.claude-plugin/plugin.json`** and **`marketplace.json`** — the plugin manifest, and the entry that makes this repo its own marketplace (named `melconcoast`, after the owner, so installs read `code-idea@melconcoast`). The version lives in `plugin.json` only and must match the release tag; CI enforces it.
 - **`skills/scaffold/SKILL.md`** — the workflow itself: when the skill triggers, how the interview works, how structure is decided, how content gets drafted and written. Changes here affect behavior directly, so keep edits scoped and explain the reasoning in the PR description.
@@ -22,6 +23,9 @@ and a stub `SKILL.md` registers a broken skill for everyone.
 - **`skills/execute-plan/SKILL.md`** — the micro-loop: how one task is selected, implemented, verified, and written back. It reads the plan file `plan-module` produced rather than restating that file's format, so a vocabulary or counting change belongs in `plan-module`'s `plan-template.md` first.
 - **`skills/execute-plan/references/verification.md`** — finding or bootstrapping a test runner, what counts as green, and what to do with a scenario that's wrong or can't be checked. Guidance on proving a task is done belongs here, not in the SKILL.md.
 - **`skills/execute-plan/references/progress-updates.md`** — every write execution makes to a plan file or the roadmap. **This file is deliberately subordinate**: the checkbox vocabulary and counting rules are specified in `plan-module`'s `plan-template.md`, and the roadmap `Status` vocabulary in `scaffold`'s `templates.md`. It may say how to apply them and nothing more — if it ever disagrees with either, it's the file that's wrong.
+- **`skills/test-and-verify/SKILL.md`** — running a suite, reading the output, and the bounded fix loop. It never writes a plan file; that's `execute-plan`'s alone, and a change here that starts editing plan state is a bug, not a feature.
+- **`skills/test-and-verify/references/test-commands.md`** — where the test command lives per ecosystem, targeted versus whole-suite runs, and the type-check and lint commands a gate adds. **This file is expected to age**, like the heuristics file — a stale runner or flag is a welcome PR, not a bug report.
+- **`skills/test-and-verify/references/remediation.md`** — telling an application bug from a test bug, what a targeted fix may touch, the three-attempt circuit breaker, and the pass/fail report formats. Guidance on *how to fix* belongs here; guidance on what "done" means belongs in `execute-plan`'s `verification.md`.
 - **`examples/`** — shared across every skill in the plugin, which is why it stays at the repo root rather than moving under `skills/scaffold/`.
 
 ## Reporting an outdated recommendation
