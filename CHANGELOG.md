@@ -41,6 +41,11 @@ way from the outside — it just stops duplicating a job that now has an owner.
   trigger boundary.
 
 ### Changed
+- **Fixture G is now explicitly the false-closure fixture, and Fixture I is the default for execution
+  scenarios.** Fixture G's plan called Phase 1 closed while only one of its tasks had ever been built,
+  so every `execute-plan` run against it correctly stopped at Step 0 and never reached the behavior
+  the scenario was actually testing. That inconsistency is exactly what S84 needs, so it stays — but
+  the sixteen other scenarios keyed to it now name Fixture I, whose closed work is real.
 - **`execute-plan` delegates verification instead of doing it.** Step 3 hands the run to
   `test-and-verify` and takes its verdict as given; Step 5 hands it the gate. It only runs tests inline
   if that skill isn't available, and then by its rules.
