@@ -223,8 +223,8 @@ roadmap is always generated." One `## Module <n>` block per module, each holding
 `### Sub-Module <n>.<m>` blocks, in dependency order.
 
 **This file records modules and sub-modules only. It does not contain task tables.** Task-level
-detail is the output of the step that plans a sub-module, and inventing it here — before any code
-exists — produces confident guesses, which is the placeholder failure this whole file forbids.
+detail is `plan-module`'s output, written to its own plan file, and inventing it here — before any
+code exists — produces confident guesses, which is the placeholder failure this whole file forbids.
 
 ```markdown
 # Development Roadmap
@@ -259,16 +259,17 @@ free-text status makes the file unusable by the step that reads it.
 | `blocked` | Cannot start; the blocker is named in `Depends on:` |
 | `dropped` | Was planned, deliberately abandoned. Keep the block; state why in `Out of scope:` |
 
-**Identifiers.** Modules are `Module <n>`; sub-modules are `<n>.<m>` and are the addressable unit —
-the planning step operates on one sub-module at a time.
+**Identifiers.** Modules are `Module <n>`; sub-modules are `<n>.<m>`. `plan-module` operates on one
+**module** at a time and its sub-modules become the phase boundaries of that module's plan file.
 
 **`Depends on:`** takes `none`, one or more module or sub-module ids with blocks in this same file, or
 a named external blocker (a pending decision, a third-party dependency) — but never an id with no
 block here.
 
-**When tasks are added later, they are plain English and never sample code.** A task line says what
-changes and why it matters, not how to write it. Code in a roadmap goes stale the moment the code
-changes, and a stale doc misleads more than no doc at all.
+**`Tasks:` is a pointer, never a task list.** It reads `not yet planned` until `plan-module` runs,
+and then becomes `see docs/guides/feature_<module>_plan.md — Phase <n>`. Task detail lives in the
+plan file only. Code in a roadmap goes stale the moment the code changes, and a stale doc misleads
+more than no doc at all.
 
 `## Deferred` and a `dropped` module are not the same thing. Deferred items were never modules —
 they're capability-level scope decisions. A dropped module was scoped and sequenced first, and the

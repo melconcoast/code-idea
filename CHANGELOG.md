@@ -1,5 +1,54 @@
 # Changelog
 
+## [3.1.0] — 2026-08-22
+
+Adds the plugin's second skill, `plan-module`. `scaffold` has always written a
+`docs/development-roadmap.md` whose every `**Tasks:**` field read `not yet planned`; `plan-module` is
+what fills that in. Additive — nothing in 3.0.0 changes behavior, and no generated file changes shape.
+
+### Added
+- **`plan-module`** (`skills/plan-module/SKILL.md`) — reads one `## Module <n>` block out of
+  `docs/development-roadmap.md` and writes `docs/guides/feature_<module>_plan.md`: 2–4 phases in
+  dependency order, at most 3–4 development tasks per phase, 1–3 plain-English test scenarios under
+  every task, and a mandatory `Task X.V` verification gate closing each phase. It reads the module's
+  scope and dependency order out of the roadmap rather than re-deriving them, reads the project's own
+  context file, `product.md`, and pending decisions before drafting, and confirms the phase cut before
+  writing any tasks. Invoked as `/code-idea:plan-module`, or triggered by "plan the next module",
+  "plan module 3", "break this module into phases", "create the execution plan for [module]".
+- **A four-state checkbox vocabulary** for plan files — `[ ]` open, `[x]` done *and verified*,
+  `[~]` reframed (annotation required), `[-]` skipped (annotation required) — with progress counted in
+  closed items and never as a percentage. Specified in
+  `skills/plan-module/references/plan-template.md`, which `execute-plan` will parse.
+- `skills/plan-module/references/scenario-writing.md` — what makes a plain-English test scenario
+  checkable, with weak/strong pairs, per-task coverage rules, and the never-write-test-code rule.
+- The plan file is a **living document**: it carries a `## Progress Log` and a `## Files Modified`
+  section that fill in during execution, and re-planning a module in flight preserves every closed
+  item rather than resetting it.
+- `examples/sample-output/docs/guides/feature_assignment_plan.md` — a worked example showing a closed
+  phase, a `[~]` reframe, a `[-]` skip, and a phase gated by a pending decision.
+- `examples/test-scenarios.md` — Fixtures E and F, plus S45–S64 covering module selection, the phase
+  cut, output integrity, the re-plan-preserves-progress rule, and the trigger boundary between the two
+  skills.
+
+### Changed
+- **The roadmap's `**Tasks:**` field is now a pointer, not a placeholder.** It reads `not yet planned`
+  until `plan-module` runs, then becomes `see docs/guides/feature_<module>_plan.md — Phase <n>`. Task
+  detail lives only in the plan file; the roadmap stays an index of modules and sub-modules.
+- **The planning unit is a module, not a sub-module.** `skills/scaffold/references/templates.md`
+  previously called sub-modules "the addressable unit," which contradicted how `plan-module` actually
+  works — a module's sub-modules are the phase boundaries of its plan file. Corrected in
+  `templates.md` and `best-practices.md`.
+- `skills/scaffold/SKILL.md` Step 5 — a re-run must not reset a `**Tasks:**` pointer back to
+  `not yet planned`, which would orphan a live plan file.
+- `README.md`, `AGENTS.md`, and `CONTRIBUTING.md` updated for a two-skill plugin. `execute-plan`
+  remains the only reserved-but-unbuilt name, and still ships no directory until it is written.
+- `examples/sample-output/README.md` — fixed a stale `docs/roadmap.md` in its file tree, missed by
+  3.0.0's rename.
+
+### Upgrading
+Nothing to do. `plan-module` appears automatically once the plugin updates; existing roadmaps work
+unchanged, since `**Tasks:** not yet planned` is exactly what it expects to find.
+
 ## [3.0.0] — 2026-08-21
 
 Major release. `code-idea` is now a Claude Code **plugin** rather than a standalone skill repo, the
