@@ -26,6 +26,7 @@ Builds a module from its plan file one task at a time — real code, real tests,
 - Locate the plan file: the one the user named; else the only one in `docs/guides/`; else list them with their progress and ask which.
 - Read it whole before touching anything — the header counts, every phase's `Status` and `Dependencies`, every item's glyph. Then read the root context file (`CLAUDE.md` / `AGENTS.md`) and the docs it links: its rules and conventions bind the code you're about to write.
 - Select the first phase that isn't closed. **A phase whose `Dependencies:` name a phase that is still open does not start** — name the blocking phase and stop.
+- **If the plan disagrees with the repository — a closed task whose code isn't there, a `## Files Modified` path that doesn't exist — stop and report it.** Don't build on a closure that isn't true, and don't quietly repair it either: reopening a phase the file calls done is the user's call, and rewriting the record to match reality erases the evidence of what happened.
 - Within that phase select the **first** `[ ]` development task. Don't look ahead, don't reorder, don't take an easier one first.
 - Announce that task by number and title before starting work, and re-announce on every pass through the loop.
 
@@ -53,7 +54,7 @@ Builds a module from its plan file one task at a time — real code, real tests,
 
 ### Step 5 — The phase gate, then stop
 - When every development task in the phase is closed, the one item left is `Task X.V`. Run the **whole** module's suite, not just this phase's tests — the gate exists to catch what this phase broke elsewhere.
-- Green: close the gate, set the phase to `Status: [x] Done`, update `Overall Progress`, append one dated Progress Log line saying what the phase delivered, and flip the matching sub-module in `docs/development-roadmap.md`.
+- Green: close the gate, set the phase to `Status: [x] Done`, update `Overall Progress`, append one dated Progress Log line saying what the phase delivered, and flip the matching sub-module in `docs/development-roadmap.md`. Status values are bare — a caveat worth recording goes in the Progress Log, never appended to a status.
 - Red: the phase does not close. Fix the regression, or mark the offending task `[~]` and report it. A gate that gets closed over failing tests is worse than no gate.
 - **Stop here.** Report what closed, what's still open, and what the next phase needs, then ask whether to continue. A phase boundary is the user's decision point, not yours.
 

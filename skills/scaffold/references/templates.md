@@ -249,7 +249,10 @@ code exists — produces confident guesses, which is the placeholder failure thi
 ```
 
 **`Status` is a closed vocabulary — these five values only**, at both module and sub-module level. A
-free-text status makes the file unusable by the step that reads it.
+free-text status makes the file unusable by the step that reads it. The value is the bare word and
+nothing else: no parenthetical, no "done (server-side only)", no qualifier appended to explain a
+caveat. A status that needs a caveat is either a different status or a note that belongs in
+`Out of scope:` or the plan file's Progress Log.
 
 | Status | Means |
 |---|---|

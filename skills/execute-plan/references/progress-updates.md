@@ -32,13 +32,18 @@ The `## Progress Log` is not touched per task — it gets one line per phase, at
 
 At the `X.V` gate, after the whole module's suite is green:
 
-- Close the gate item and set the phase's `Status:` line to `[x] Done`.
+- Close the gate item and set the phase's `Status:` line to `[x] Done` — those two tokens and nothing
+  else. Never append a parenthetical qualifier to a status; that is a free-text status, and this skill
+  is the parser it breaks.
 - Recompute `Overall Progress` across phases by the same closed-over-total rule.
 - Append **one** dated `## Progress Log` line: what the phase delivered, and anything a later reader
   would otherwise have to reconstruct — a reframe and why, a scenario that couldn't be verified, a
   decision forced along the way. The log is append-only. Earlier lines are the record of what
   happened and are never rewritten, edited, or tidied, even when they turn out to have been wrong.
-- Set the header `Status:` to `Done` only when every phase in the file is closed.
+- Set the header `Status:` to `Done` **as soon as** every phase in the file is closed, and not before.
+  A file reading `In Progress` at `[N/N Phases Closed]` contradicts itself. If something still feels
+  unfinished at that point, the honest form is a Progress Log line and an open task — not a header
+  that disagrees with its own count.
 
 Good log lines are specific about consequence:
 
@@ -61,8 +66,13 @@ updates it, so an unsynced roadmap sends the next `plan-module` run at a module 
   names a phase that isn't in the file, say so instead of guessing; that mismatch is a real problem
   in the handoff, not noise to route around.
 
-Use the status words already in the roadmap. That vocabulary is closed and it isn't this skill's to
-extend — a status the file has never used is a sign you're inventing one.
+Use the status words already in the roadmap, bare. That vocabulary is closed and it isn't this skill's
+to extend — a status the file has never used is a sign you're inventing one, and so is a word with a
+parenthetical bolted on to explain a caveat. `done (server-side only)` is not the vocabulary's `done`.
+
+When a phase closes but something real is unresolved — a task reframed, a capability not reachable
+yet — that belongs in the plan file's Progress Log and its `[~]` annotation, where a reader will find
+it. The roadmap says built or not built; the plan file says what happened.
 
 **Change status and nothing else.** Not `In scope:`, not `Out of scope:`, not `Depends on:`, not the
 `**Tasks:**` pointer, and never a task table — task detail lives in the plan file only. Discovering
