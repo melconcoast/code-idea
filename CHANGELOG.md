@@ -4,7 +4,12 @@
 
 Adds the plugin's second skill, `plan-module`. `scaffold` has always written a
 `docs/development-roadmap.md` whose every `**Tasks:**` field read `not yet planned`; `plan-module` is
-what fills that in. Additive — nothing in 3.0.0 changes behavior, and no generated file changes shape.
+what fills that in. `plan-module` itself is purely additive — it changes nothing 3.0.0 established, and
+no generated file changes shape.
+
+**This release also carries everything listed under 3.0.0 below**, which was prepared but never tagged.
+If you are upgrading from 2.x, read 3.0.0's **Breaking** and **Upgrading from 2.x** sections — they
+apply to this release.
 
 ### Added
 - **`plan-module`** (`skills/plan-module/SKILL.md`) — reads one `## Module <n>` block out of
@@ -50,6 +55,9 @@ Nothing to do. `plan-module` appears automatically once the plugin updates; exis
 unchanged, since `**Tasks:** not yet planned` is exactly what it expects to find.
 
 ## [3.0.0] — 2026-08-21
+
+*Never tagged on its own — these changes ship as part of 3.1.0. Kept as a separate entry because it is
+where the breaking changes are described.*
 
 Major release. `code-idea` is now a Claude Code **plugin** rather than a standalone skill repo, the
 skill inside it is renamed `scaffold`, and `docs/roadmap.md` becomes `docs/development-roadmap.md`
