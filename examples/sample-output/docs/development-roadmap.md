@@ -33,7 +33,7 @@
 **Depends on:** Module 2
 
 ### Sub-Module 3.1 — Assign a task
-**Status:** in progress
+**Status:** done
 **In scope:** exactly one assignee per task; only the assignee or a workspace admin may change status
 **Out of scope:** multi-assignee tasks; reassignment history
 **Tasks:** see `docs/guides/feature_assignment_plan.md` — Phase 1

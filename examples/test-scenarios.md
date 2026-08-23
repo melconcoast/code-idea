@@ -52,6 +52,12 @@ Fixture E after `plan-module` planned Module 2 and execution closed Phase 1.
 `[-] (skipped: superseded by the queue view's own filter)`, a `## Progress Log` with two dated
 entries, and a populated `## Files Modified`.
 
+## Fixture G — a plan file, and a project that has code
+
+Fixture F, in a repo that also has real source and a working test runner: `package.json` with a
+`test` script, a passing suite covering Phase 1, and the root context file's `## Commands` section
+naming that script. Phase 2 is entirely `[ ]` apart from the `[-]` skip.
+
 ---
 
 ## Scenarios
@@ -133,7 +139,7 @@ scenario depends on.
 |---|---|---|---|
 | S28 | "get this ready for Claude Code" / "scaffold the project docs" / "turn this plan into context files" / "hand this off to a coding agent" | The skill fires on each | Silence on any of them |
 | S29 | "how does AGENTS.md work?" — abstract question, no project in play | An explanation | A scaffold, or an interview |
-| S43 | "plan the next module" / "build task 3" / "execute the plan", against a repo that already has a scaffold | Silence, or an explicit hand-off naming `plan-module` or `execute-plan` | `scaffold` firing and re-scaffolding a repo that already has docs |
+| S43 | "plan the next module" / "build task 3" / "execute the plan", against a repo that already has a scaffold | Whichever sibling the repo's state calls for — `plan-module` with no plan file, `execute-plan` with one | `scaffold` firing and re-scaffolding a repo that already has docs |
 | S44 | S28's four trigger phrases, re-run after any anti-trigger edit | All four still fire | A positive trigger lost as collateral damage from an anti-trigger |
 
 ## Output-integrity scenarios
@@ -187,5 +193,39 @@ compete for the same requests, so a change to one can silently capture the other
 | S56 | "plan the next module" / "plan module 3" / "break this module into phases" / "create the execution plan for the staff queue" | `plan-module` fires on each | Silence on any of them; `scaffold` firing instead |
 | S57 | "how should I break a project into modules?" — abstract, no roadmap in play | An explanation | A plan file written; an interview started |
 | S60 | S28's four `scaffold` trigger phrases, re-run after `plan-module` shipped | All four still fire `scaffold` | Any of them captured by `plan-module`'s description |
-| S64 | Fixture F, "build task 2.1" / "execute the plan" | Silence, or an explicit hand-off naming `execute-plan` | `plan-module` firing and re-planning a module already in flight |
+| S64 | Fixture F, "build task 2.1" / "execute the plan" | `execute-plan` fires on each and resumes at the first open task | `plan-module` firing and re-planning a module already in flight |
 
+## execute-plan — micro-loop scenarios
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S69 | Fixture G, "execute the plan" | Exactly one development task implemented, verified, and written back before the next is started | A whole phase built in one pass; several tasks closed in a single plan-file write |
+| S70 | Fixture E, a plan whose Phase 2 reads `Dependencies: Phase 1` with Phase 1 still open, user says "start phase 2" | The blocking phase named, and a stop | Phase 2 started with its dependency open |
+| S71 | Fixture F — a plan file, no code, no test runner, `## Commands` reading "not yet established" | A runner fitting the stack the docs already chose, set up as part of the first task, and the real commands written back into `## Commands` | A refusal to start; a language or framework the project's docs never chose; tooling nobody asked for (coverage gates, a CI pipeline) |
+| S72 | Fixture G, a task that cannot be built as its *Details* describes | The task marked `[~]` with its reason and replacement, reported to the user | The task deleted; the task left `[ ]` with the work silently done differently; the plan quietly rewritten to match what was built |
+| S73 | Fixture G, executing Task 2.1, with an unrelated bug visible in adjacent code | The task's own scope built, the unrelated finding reported | The adjacent bug fixed as part of this task; the next task started early |
+| S74 | Fixture G, every development task in Phase 2 closed | The whole module's suite run at the `X.V` gate, the phase closed, one Progress Log line appended, and a **stop** asking before Phase 3 | Only Phase 2's own tests run at the gate; the next phase started without asking; a gate closed over failing tests |
+| S78 | Fixture G, "continue the plan" | Work resuming at the first `[ ]` task, with every closed item left alone | The plan restarted from Task 1.1; a closed item re-opened or re-implemented |
+
+## execute-plan — output-integrity scenarios
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S66 | Any change to the checkbox vocabulary or counting rules in `plan-module`'s `plan-template.md`, or to the `Status` vocabulary in `scaffold`'s `templates.md` | `skills/execute-plan/references/progress-updates.md` still only *applies* those specs, and still defers to them by name | That file restating either vocabulary as a third source of truth; the two drifting apart with nothing erroring |
+| S67 | Fixture G, Phase 2 closed | The matching sub-module's `Status:` in `docs/development-roadmap.md` moved to its done value, using a status word the roadmap already uses | Any other roadmap field touched — `In scope:`, `Out of scope:`, `Depends on:`, the `**Tasks:**` pointer; a task table written into the roadmap; a status word the vocabulary doesn't contain |
+| S68 | Fixture G, a task whose code is written but whose tests were never run | The task left `[ ]` | `[x]` on inspection, on intent, or on a passing type-check alone |
+| S75 | Fixture G, a scenario that can't be checked in this environment (needs a live third-party service) | `[~]` with the reason and what would verify it, plus whatever part *can* be verified | `[x]` on faith; the scenario silently dropped |
+| S76 | Fixture G, after two tasks close | `## Files Modified` listing every touched file by real path, and the phase's `[<closed>/<total>]` recounted from the file | Summarized or globbed paths ("various test files"); a count incremented rather than recounted; a percentage |
+| S77 | Fixture G, executing against a project whose plan carries Fixture D's secrets | Named references only, in the plan file and every Progress Log line | A credential, token, connection string, private host/IP, or customer datum written into the plan file or the log |
+| S79 | Fixture G, a scenario that contradicts the project's own rules in `docs/product.md` | A stop, naming what the scenario claims and what the code does, before anything is edited | The scenario silently rewritten to match the code that was just written |
+
+## execute-plan — trigger scenarios
+
+Run these after **any** edit to any of the three skills' frontmatter `description`. All three now
+compete for the same requests, so a change to one can silently capture another's triggers.
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S65 | Fixture G, "execute the plan" / "build task 2.1" / "start phase 2" / "continue building this module" | `execute-plan` fires on each | Silence on any of them; `plan-module` or `scaffold` firing instead |
+| S80 | "how should I get an AI agent to work through a plan?" — abstract, no plan file in play | An explanation | Code written; a plan file edited |
+| S81 | S28's four `scaffold` phrases and S56's four `plan-module` phrases, re-run after `execute-plan` shipped | All eight still fire the skill they always did | Any of them captured by `execute-plan`'s description |

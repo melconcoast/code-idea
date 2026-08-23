@@ -1,5 +1,66 @@
 # Changelog
 
+## [3.2.0] — 2026-08-22
+
+Adds the plugin's third and final skill, `execute-plan`, and with it the chain closes: `scaffold`
+writes the docs set, `plan-module` cuts a module into a plan file, and `execute-plan` builds that plan
+file into working, tested code. No skill name is reserved-but-unbuilt any more.
+
+Additive for anyone already on 3.1.0 — nothing `scaffold` or `plan-module` generates changes shape,
+and an existing plan file is exactly what the new skill expects to find.
+
+### Added
+- **`execute-plan`** (`skills/execute-plan/SKILL.md`) — works a plan file in a strict **micro-loop**:
+  select the first open task, implement only what its *Details* names, write the test code its
+  plain-English scenarios describe, run it until green, then update the plan file — before looking at
+  the next task. Never a whole phase in one pass. At each `Task X.V` gate it runs the *whole* module's
+  suite rather than just that phase's tests, closes the phase, and **stops to ask** before continuing.
+  Invoked as `/code-idea:execute-plan`, or triggered by "execute the plan", "build task 2.1",
+  "start phase 2", "continue building this module", "implement the next task".
+- **Test-runner bootstrap.** In this chain a project starts with no code, so the first module usually
+  has nothing to run and `scaffold` has left `## Commands` reading "not yet established". `execute-plan`
+  sets up the runner that fits the stack the project's docs already chose — never introducing a
+  language or framework those docs didn't pick — and writes the real commands back into the root
+  context file. That closes a loop `scaffold` could not close on its own.
+- **Roadmap status write-back.** Sub-modules move to `in progress` as their phase starts and `done` as
+  it closes; the module becomes `done` once every phase is. Phases match sub-modules through the
+  `**Tasks:**` pointer `plan-module` wrote. Nothing else updated these statuses, so before this a
+  finished module still read `planned` and the next `plan-module` run would be pointed at work that
+  was already built.
+- `skills/execute-plan/references/verification.md` — where to look for a test runner, how to bootstrap
+  one without adding tooling nobody asked for, what counts as green, and what to do with a scenario
+  that is wrong or that can't be checked in the environment at hand.
+- `skills/execute-plan/references/progress-updates.md` — every write execution makes to a plan file or
+  the roadmap. **Deliberately subordinate**: it applies the vocabularies specified in `plan-module`'s
+  `plan-template.md` and `scaffold`'s `templates.md` and never restates them, so the plugin keeps one
+  source of truth per contract rather than three.
+- `examples/test-scenarios.md` — Fixture G (a plan file in a repo that has code and a working runner)
+  and S65–S81, covering the micro-loop, phase-dependency enforcement, runner bootstrap, reframe-not-
+  delete, scope containment, the gate-and-stop, resume-don't-restart, roadmap write-back, the
+  verified-not-written rule, and the three-way trigger boundary.
+
+### Changed
+- **`[x]` is now enforced as *verified*, not *written*.** The distinction was always in
+  `plan-template.md`; `execute-plan` is what acts on it. A task whose code exists but whose tests never
+  ran stays `[ ]`, and behavior that genuinely can't be checked here becomes `[~]` with what would
+  verify it — never `[x]` on faith.
+- `skills/plan-module/references/plan-template.md` now specifies a **phase's** `Status:` line, not just
+  the header's. It reads `[ ] Open` while anything in the phase is open and `[x] Done` once every item
+  including the `X.V` gate is closed. Only the open form was written down before, so the closed form
+  was being improvised.
+- `examples/test-scenarios.md` — S43 and S64 changed meaning. Both previously accepted silence or a
+  hand-off *naming* `execute-plan`, because it didn't exist; now the sibling skill is expected to fire.
+- `examples/sample-output/docs/development-roadmap.md` — Sub-Module 3.1 corrected to `done`. The sample
+  plan file closes Phase 1, so under the new write-back rule its sub-module can't still read
+  `in progress`. The sample was internally inconsistent before there was a rule to catch it.
+- `README.md`, `AGENTS.md`, and `CONTRIBUTING.md` updated for a three-skill plugin.
+
+### Upgrading
+Nothing to do. `execute-plan` appears once the plugin updates. Existing plan files work unchanged —
+it reads the format `plan-module` has always written. If you have a roadmap whose statuses drifted
+while there was no skill maintaining them, the first `execute-plan` pass over a module will bring that
+module's own entries back in line; it won't touch any other module's.
+
 ## [3.1.0] — 2026-08-22
 
 Adds the plugin's second skill, `plan-module`. `scaffold` has always written a

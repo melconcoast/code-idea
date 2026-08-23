@@ -2,7 +2,7 @@
 
 *"Code this idea"* — take a plan or idea from conversation to a state a coding agent can actually build from correctly.
 
-A Claude Code **plugin**. Two skills today, run in sequence: **`scaffold`** turns a plan into the docs a coding agent needs, and **`plan-module`** turns one module of the roadmap it produces into a phase-based execution spec.
+A Claude Code **plugin**. Three skills, run in sequence: **`scaffold`** turns a plan into the docs a coding agent needs, **`plan-module`** turns one module of the roadmap it produces into a phase-based execution spec, and **`execute-plan`** builds that spec task by task.
 
 `scaffold` turns a project plan, idea, or planning conversation into a complete, AI-coding-agent-ready documentation set — a lean root context file in whichever format your target agent reads natively (`CLAUDE.md` for Claude Code, `AGENTS.md` for Codex or Antigravity, or both for mixed/generic targets), plus linked docs (architecture, decisions, conventions, development roadmap, product, design-system), and, for monorepos, nested per-subsystem context files.
 
@@ -83,7 +83,41 @@ stays an index and task detail lives in exactly one place.
 
 Why it's a separate skill rather than part of `scaffold`: at scaffold time there's no codebase to plan
 against, so writing tasks then means inventing implementation detail nobody has decided yet. The
-roadmap is the contract between the two — `scaffold` writes it, `plan-module` reads it.
+roadmap is the contract between the two — `scaffold` writes it, `plan-module` reads it. The plan file
+is the contract in turn between `plan-module` and `execute-plan`.
+
+## execute-plan — from spec to working code
+
+`plan-module` leaves you a plan file full of `[ ]` items. `execute-plan` is what closes them, working
+in a strict **micro-loop**: one task at a time, never a whole phase at once.
+
+For each open task, in order:
+
+1. **Implement exactly that task** — the endpoints, tables, and data shapes its *Details* names, and
+   nothing it doesn't.
+2. **Write the test code its scenarios describe** — one test per scenario, in the scenario's own terms.
+   The scenarios are plain English precisely so that choosing the framework is this step's job.
+3. **Run them until green**, reading real output. `[x]` means *verified* — a task whose code exists but
+   whose tests never ran stays open.
+4. **Update the plan file in the same pass** — the glyphs, the closed counts, `## Files Modified` by
+   real path, and `Last Updated`.
+
+At each phase's `Task X.V` gate it runs the **whole** module's suite, not just that phase's tests,
+then closes the phase, appends a `## Progress Log` line, flips the matching sub-module in
+`docs/development-roadmap.md`, and **stops to ask** before starting the next phase. A phase boundary
+is your decision point, not the agent's.
+
+Two things it does that are easy to miss:
+
+- **It bootstraps the test runner.** In this chain the project starts with no code, so the first module
+  usually has nothing to run. `execute-plan` sets up the runner that fits the stack the docs already
+  chose, then writes the real commands back into the root context file's `## Commands` section —
+  closing the loop `scaffold` opens when it writes "not yet established."
+- **It keeps the roadmap true.** Sub-modules move to in-progress and done as phases close. Nothing else
+  updates those statuses, so without this the roadmap would still call a finished module `planned`.
+
+When an approach doesn't survive contact with the code, the task becomes `[~]` with its reason and
+replacement — reported, never silently dropped.
 
 ## Installation
 
@@ -94,15 +128,15 @@ roadmap is the contract between the two — `scaffold` writes it, `plan-module` 
 /plugin install code-idea@melconcoast
 ```
 
-Skills are then invoked as `/code-idea:scaffold` and `/code-idea:plan-module`, or triggered naturally by what you ask for.
+Skills are then invoked as `/code-idea:scaffold`, `/code-idea:plan-module`, and `/code-idea:execute-plan`, or triggered naturally by what you ask for.
 
-**Claude.ai / Claude Desktop** — download the `scaffold.skill` and `plan-module.skill` assets from a [release](https://github.com/melconcoast/code-idea/releases) and add them as skills.
+**Claude.ai / Claude Desktop** — download the `scaffold.skill`, `plan-module.skill`, and `execute-plan.skill` assets from a [release](https://github.com/melconcoast/code-idea/releases) and add them as skills.
 
 **From source** — no build step. Point a local marketplace at your clone: `/plugin marketplace add /path/to/code-idea`.
 
 ## Usage
 
-Once installed, just ask naturally — "let's get this ready for Claude Code," "scaffold AGENTS.md for this project," "turn this plan into context files." Once the roadmap exists and you're ready to build, "plan the next module" or "plan module 3" hands off to `plan-module`. See [`examples/`](examples/) for a sample of what the output looks like for a small multi-subsystem project.
+Once installed, just ask naturally — "let's get this ready for Claude Code," "scaffold AGENTS.md for this project," "turn this plan into context files." Once the roadmap exists and you're ready to build, "plan the next module" or "plan module 3" hands off to `plan-module`; once a plan file exists, "execute the plan" or "build task 2.1" hands off to `execute-plan`. See [`examples/`](examples/) for a sample of what the output looks like for a small multi-subsystem project.
 
 ## Repository structure
 
@@ -119,11 +153,16 @@ Once installed, just ask naturally — "let's get this ready for Claude Code," "
 │   │       ├── recommendation-heuristics.md  # stack/DB/UI defaults, with sources
 │   │       ├── agent-profiles.md         # what each target agent reads and how, with sources
 │   │       └── templates.md              # skeleton for each doc type
-│   └── plan-module/
-│       ├── SKILL.md                      # one roadmap module -> phase-based execution spec
+│   ├── plan-module/
+│   │   ├── SKILL.md                      # one roadmap module -> phase-based execution spec
+│   │   └── references/
+│   │       ├── plan-template.md          # plan file format, checkbox vocabulary, counting rules
+│   │       └── scenario-writing.md       # what makes a test scenario checkable
+│   └── execute-plan/
+│       ├── SKILL.md                      # plan file -> working, tested code
 │       └── references/
-│           ├── plan-template.md          # plan file format, checkbox vocabulary, counting rules
-│           └── scenario-writing.md       # what makes a test scenario checkable
+│           ├── verification.md           # finding/bootstrapping a runner, what counts as verified
+│           └── progress-updates.md       # the plan-file and roadmap writes execution makes
 ├── examples/
 │   ├── sample-output/                    # example generated file tree
 │   └── test-scenarios.md                 # scenarios a change must be checked against
@@ -134,9 +173,8 @@ Once installed, just ask naturally — "let's get this ready for Claude Code," "
 └── LICENSE
 ```
 
-One further skill is planned for this plugin and is **not built yet**: `execute-plan`, which works
-through a plan file phase by phase, marking tasks closed as their scenarios pass. It does not ship a
-directory until it is written.
+All three skills in the chain now ship. `scaffold` writes the docs set, `plan-module` cuts a module
+into a plan file, and `execute-plan` builds it.
 
 ## Contributing
 
