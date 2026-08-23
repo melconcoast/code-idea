@@ -34,6 +34,7 @@ Express API talks to Postgres directly via a query layer in `/server/db`. React 
 ## Related docs
 - `docs/decisions.md` — why non-obvious choices were made
 - `docs/development-roadmap.md` — the module/sub-module breakdown, dependency order, and what's deliberately deferred
+- `docs/guides/feature_assignment_plan.md` — the phase plan for Module 3, currently in flight
 - `docs/product.md` — current business/feature rules
 
 ## Maintaining these docs

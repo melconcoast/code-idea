@@ -5,16 +5,19 @@ Thanks for considering a contribution. This plugin is small on purpose — most 
 ## Where things live
 
 The repo is a Claude Code plugin. Each skill owns a directory under `skills/`, holding its own
-`SKILL.md` and its own `references/`. One skill exists today — `scaffold`. Two are planned and
-deliberately unbuilt, `plan-module` and `execute-plan`; neither gets a directory until it is written,
-because git can't track an empty directory and a stub `SKILL.md` registers a broken skill for everyone.
+`SKILL.md` and its own `references/`. Two skills exist today — `scaffold` and `plan-module`. One more
+is planned and deliberately unbuilt, `execute-plan`; it gets no directory until it is written, because
+git can't track an empty directory and a stub `SKILL.md` registers a broken skill for everyone.
 
 - **`.claude-plugin/plugin.json`** and **`marketplace.json`** — the plugin manifest, and the entry that makes this repo its own marketplace (named `melconcoast`, after the owner, so installs read `code-idea@melconcoast`). The version lives in `plugin.json` only and must match the release tag; CI enforces it.
 - **`skills/scaffold/SKILL.md`** — the workflow itself: when the skill triggers, how the interview works, how structure is decided, how content gets drafted and written. Changes here affect behavior directly, so keep edits scoped and explain the reasoning in the PR description.
 - **`skills/scaffold/references/best-practices.md`** — the research and reasoning behind the size limits, ordering rules, and doc-vs-skill split. If you're proposing a change to the skill's rules, the backing reasoning (or a correction to outdated reasoning) belongs here.
 - **`skills/scaffold/references/recommendation-heuristics.md`** — stack/database/caching/UI defaults the skill proposes during its interview. **This file is expected to age** — tooling and best practices shift. If something here is outdated, that's a welcome PR, not a bug report.
 - **`skills/scaffold/references/agent-profiles.md`** — what each coding agent reads and how it loads it. **This file is expected to age**, like the heuristics file, and every claim carries a source URL and verified-on date. A stale entry is a welcome PR. Never add a row you can't cite from that agent's own docs.
-- **`skills/scaffold/references/templates.md`** — the skeleton structure for each generated doc type.
+- **`skills/scaffold/references/templates.md`** — the skeleton structure for each generated doc type. The `docs/development-roadmap.md` section here is the contract `plan-module` reads; a change to that block is a change to both skills.
+- **`skills/plan-module/SKILL.md`** — how a roadmap module is located, cut into phases, and written out as a plan file. It reads the roadmap contract rather than restating it, so a scope or vocabulary change belongs in `scaffold`'s `templates.md` first.
+- **`skills/plan-module/references/plan-template.md`** — the plan file's exact format, its four-state checkbox vocabulary, and how progress is counted. `execute-plan` will parse this, so treat the headings and glyphs as a contract, not styling.
+- **`skills/plan-module/references/scenario-writing.md`** — what makes a plain-English test scenario checkable, with weak/strong pairs. New guidance on scenario quality belongs here, not in the SKILL.md.
 - **`examples/`** — shared across every skill in the plugin, which is why it stays at the repo root rather than moving under `skills/scaffold/`.
 
 ## Reporting an outdated recommendation

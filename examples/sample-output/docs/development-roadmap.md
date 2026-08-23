@@ -36,14 +36,14 @@
 **Status:** in progress
 **In scope:** exactly one assignee per task; only the assignee or a workspace admin may change status
 **Out of scope:** multi-assignee tasks; reassignment history
-**Tasks:** not yet planned
+**Tasks:** see `docs/guides/feature_assignment_plan.md` — Phase 1
 
 ### Sub-Module 3.2 — Assignment notifications
 **Status:** blocked
 **Depends on:** 3.1, plus the pending email-provider decision in `docs/decisions.md`
 **In scope:** notify the new assignee by email when a task is assigned to them
 **Out of scope:** digests, in-app notifications, per-user notification preferences
-**Tasks:** not yet planned
+**Tasks:** see `docs/guides/feature_assignment_plan.md` — Phase 2
 
 ## Deferred (explicitly out of scope for now)
 - Multi-workspace/team support — the data model isn't designed for tenant isolation yet, don't build features assuming it
