@@ -2,7 +2,7 @@
 
 *"Code this idea"* — take a plan or idea from conversation to a state a coding agent can actually build from correctly.
 
-A Claude Code **plugin**. Three skills, run in sequence: **`scaffold`** turns a plan into the docs a coding agent needs, **`plan-module`** turns one module of the roadmap it produces into a phase-based execution spec, and **`execute-plan`** builds that spec task by task.
+A Claude Code **plugin**. Three skills run in sequence — **`scaffold`** turns a plan into the docs a coding agent needs, **`plan-module`** turns one module of the roadmap it produces into a phase-based execution spec, and **`execute-plan`** builds that spec task by task — with a fourth, **`test-and-verify`**, doing the running and fixing of tests on their behalf.
 
 `scaffold` turns a project plan, idea, or planning conversation into a complete, AI-coding-agent-ready documentation set — a lean root context file in whichever format your target agent reads natively (`CLAUDE.md` for Claude Code, `AGENTS.md` for Codex or Antigravity, or both for mixed/generic targets), plus linked docs (architecture, decisions, conventions, development roadmap, product, design-system), and, for monorepos, nested per-subsystem context files.
 
@@ -119,6 +119,33 @@ Two things it does that are easy to miss:
 When an approach doesn't survive contact with the code, the task becomes `[~]` with its reason and
 replacement — reported, never silently dropped.
 
+## test-and-verify — the run-and-fix loop
+
+`execute-plan` doesn't run tests itself; it hands that to `test-and-verify`, which is also useful on
+its own ("run the tests", "why is this test failing").
+
+It finds the right command — the root context file's `## Commands` first, then the manifest, then CI —
+runs it, and **reads the output rather than the exit code**. A suite that exits 0 having collected no
+tests, or having skipped the new ones, is a failure wearing a green hat.
+
+On a failure it decides whether the bug is in the **application code** or in the **test** — a drifted
+fixture, a stale mock, an assertion on incidental output — says which, and applies one targeted fix at
+a time. **Three attempts, then it stops.** Past three, the diagnosis is usually what was wrong, not
+the fix, and further attempts just widen the diff on a false premise. It hands back what failed, what
+it tried, and what it ruled out.
+
+Two boundaries make it safe to call automatically:
+
+- **It never edits a plan file.** It returns a verdict; `execute-plan` marks the boxes. Two writers on
+  one plan file is how a plan stops being trustworthy.
+- **It never weakens a test to reach green** — no deleted assertions, loosened matchers, added skips,
+  or expected values rewritten to match whatever the code happens to produce. If the honest outcome is
+  "still failing", that's the outcome it reports.
+
+At a `Task X.V` phase gate it widens automatically: the whole module's suite plus the project's
+type-checker and linter. If the project has neither, it says so rather than leaving a silence that
+reads as a pass.
+
 ## Installation
 
 **Claude Code** — install as a plugin:
@@ -128,15 +155,15 @@ replacement — reported, never silently dropped.
 /plugin install code-idea@melconcoast
 ```
 
-Skills are then invoked as `/code-idea:scaffold`, `/code-idea:plan-module`, and `/code-idea:execute-plan`, or triggered naturally by what you ask for.
+Skills are then invoked as `/code-idea:scaffold`, `/code-idea:plan-module`, `/code-idea:execute-plan`, and `/code-idea:test-and-verify`, or triggered naturally by what you ask for.
 
-**Claude.ai / Claude Desktop** — download the `scaffold.skill`, `plan-module.skill`, and `execute-plan.skill` assets from a [release](https://github.com/melconcoast/code-idea/releases) and add them as skills.
+**Claude.ai / Claude Desktop** — download the `scaffold.skill`, `plan-module.skill`, `execute-plan.skill`, and `test-and-verify.skill` assets from a [release](https://github.com/melconcoast/code-idea/releases) and add them as skills.
 
 **From source** — no build step. Point a local marketplace at your clone: `/plugin marketplace add /path/to/code-idea`.
 
 ## Usage
 
-Once installed, just ask naturally — "let's get this ready for Claude Code," "scaffold AGENTS.md for this project," "turn this plan into context files." Once the roadmap exists and you're ready to build, "plan the next module" or "plan module 3" hands off to `plan-module`; once a plan file exists, "execute the plan" or "build task 2.1" hands off to `execute-plan`. See [`examples/`](examples/) for a sample of what the output looks like for a small multi-subsystem project.
+Once installed, just ask naturally — "let's get this ready for Claude Code," "scaffold AGENTS.md for this project," "turn this plan into context files." Once the roadmap exists and you're ready to build, "plan the next module" or "plan module 3" hands off to `plan-module`; once a plan file exists, "execute the plan" or "build task 2.1" hands off to `execute-plan`, which calls `test-and-verify` to prove each task before closing it. See [`examples/`](examples/) for a sample of what the output looks like for a small multi-subsystem project.
 
 ## Repository structure
 
@@ -158,11 +185,16 @@ Once installed, just ask naturally — "let's get this ready for Claude Code," "
 │   │   └── references/
 │   │       ├── plan-template.md          # plan file format, checkbox vocabulary, counting rules
 │   │       └── scenario-writing.md       # what makes a test scenario checkable
-│   └── execute-plan/
-│       ├── SKILL.md                      # plan file -> working, tested code
+│   ├── execute-plan/
+│   │   ├── SKILL.md                      # plan file -> working, tested code
+│   │   └── references/
+│   │       ├── verification.md           # bootstrapping a runner, what counts as verified
+│   │       └── progress-updates.md       # the plan-file and roadmap writes execution makes
+│   └── test-and-verify/
+│       ├── SKILL.md                      # run the suite, fix what fails, report a verdict
 │       └── references/
-│           ├── verification.md           # finding/bootstrapping a runner, what counts as verified
-│           └── progress-updates.md       # the plan-file and roadmap writes execution makes
+│           ├── test-commands.md          # finding/scoping the command, with sources
+│           └── remediation.md            # app-bug vs test-bug, circuit breaker, report formats
 ├── examples/
 │   ├── sample-output/                    # example generated file tree
 │   └── test-scenarios.md                 # scenarios a change must be checked against
@@ -173,8 +205,8 @@ Once installed, just ask naturally — "let's get this ready for Claude Code," "
 └── LICENSE
 ```
 
-All three skills in the chain now ship. `scaffold` writes the docs set, `plan-module` cuts a module
-into a plan file, and `execute-plan` builds it.
+All four skills ship. `scaffold` writes the docs set, `plan-module` cuts a module into a plan file,
+`execute-plan` builds it, and `test-and-verify` proves each piece before a box gets checked.
 
 ## Contributing
 

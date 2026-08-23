@@ -5,15 +5,12 @@ first task closes, and again whenever a scenario resists being checked.
 
 ## Finding the test runner
 
-Look in this order and stop at the first real answer:
+`test-and-verify` owns that search and the discovery order it follows — see its
+`references/test-commands.md`. Don't run a second, divergent search here; hand it the run and take
+its answer.
 
-1. The root context file's `## Commands` section — `CLAUDE.md` or `AGENTS.md`. This is where a
-   previous pass of this skill records what it set up.
-2. The project manifest — `package.json` scripts, `pyproject.toml`, `Makefile`, `go.mod`, `Cargo.toml`.
-3. A CI workflow. What CI runs is what the project considers a pass, whatever the docs say.
-4. An existing test directory. If tests exist, something runs them; find it before writing more.
-
-A command you found is better than one you invented, even when yours is tidier.
+What matters at this level is only the fork: a runner exists, or none does. If one exists, this skill
+never needs to know the command. If none does, the next section is yours.
 
 ## Bootstrapping one when there is none
 
@@ -34,15 +31,19 @@ the first task rather than stopping.
   this yet — this is the step that closes that loop, and it belongs in `## Files Modified` like any
   other change.
 
-## What counts as green
+## What counts as green, for closing a plan item
 
-- The suite ran, you read its output, and it reported zero failures.
-- The scenarios for *this* task are among the tests that ran. A suite that passes because it skipped
-  them is not a pass — check for skips, `.only`, and filters that quietly excluded new tests.
-- Type-checks and linters pass where the project has them. Neither substitutes for a test run.
+`test-and-verify` decides whether the run passed. This skill decides whether that pass closes a
+checkbox — a narrower question, and the two can differ.
+
+- The verdict is a pass, and the scenarios for *this* task are among the tests that actually ran. A
+  green run that skipped them closes nothing.
+- A failing verdict closes nothing, however close it looked. Re-invoking the verifier to get past its
+  circuit breaker is not a second opinion, it's the same attempt with the safety removed.
+- Type-checks and linters passing is not a substitute for a test run, and neither is a build.
 
 A pass you inferred, assumed, or reconstructed from a partial log is not a pass. If you can't see the
-output, you can't close the item.
+verdict, you can't close the item.
 
 ## One test per scenario, in the scenario's own terms
 

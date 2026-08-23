@@ -1,5 +1,61 @@
 # Changelog
 
+## [3.3.0] — 2026-08-22
+
+Adds a fourth skill, `test-and-verify`. The first three are a pipeline; this one is a service the
+others call. `execute-plan` no longer runs tests itself — it hands each task and each `Task X.V` gate
+to this skill and acts on the verdict.
+
+Additive for anyone on 3.2.0. No generated file changes shape, and `execute-plan` behaves the same
+way from the outside — it just stops duplicating a job that now has an owner.
+
+### Added
+- **`test-and-verify`** (`skills/test-and-verify/SKILL.md`) — finds the project's test command, runs
+  the tests relevant to the work, **reads the real output rather than the exit code**, and fixes what
+  fails in a bounded diagnose-fix-rerun loop. Every failure gets classified as an *application* bug or
+  a *test* bug before anything is edited, because picking wrong papers over a real defect or bends
+  correct code to satisfy a broken assertion. Invoked as `/code-idea:test-and-verify`, or triggered by
+  "run the tests", "verify this", "check the tests pass", "fix the failing tests", "why is this test
+  failing".
+- **A three-attempt circuit breaker.** Past three remediation attempts the diagnosis is usually what
+  was wrong rather than the fix, so further attempts widen the diff on a false premise. It stops and
+  hands back what failed, what it tried, and what it ruled out. `execute-plan` may not re-invoke it to
+  get around a red verdict — that is the same attempt with the safety removed.
+- **Two boundaries that make it safe to call automatically.** It never writes to a plan file — it
+  returns a verdict and `execute-plan` marks the boxes, because two writers on one plan file is how a
+  plan stops being trustworthy. And it never weakens a test to reach green: no deleted assertions,
+  loosened matchers, added skips, widened timeouts, or expected values rewritten to match whatever the
+  code currently produces. If the honest outcome is "still failing", that is what it reports.
+- **Gate runs widen automatically.** At a `Task X.V` gate it runs the whole module's suite plus the
+  project's type-checker and linter. If the project has neither, it says so — an omitted line reads as
+  a check that passed.
+- `skills/test-and-verify/references/test-commands.md` — the discovery order, targeted-versus-whole-suite
+  invocation per ecosystem, and the type-check and lint commands a gate adds. Includes two traps that
+  cost real time: `npm test -- <path>` misroutes when the `test` script is a chain, and a filter
+  matching nothing usually exits 0. **This file is expected to age**, like `recommendation-heuristics.md`.
+- `skills/test-and-verify/references/remediation.md` — application-bug versus test-bug diagnosis, what
+  a targeted fix may touch, the circuit breaker, and the exact pass and fail report formats.
+- `examples/test-scenarios.md` — Fixture H (a suite with one genuine bug) and S85–S96, covering
+  diagnosis, the no-op on an already-green suite, the chained-script and empty-filter traps, the
+  breaker, test-weakening, the missing-checks report, the plan-file boundary, and the now four-way
+  trigger boundary.
+
+### Changed
+- **`execute-plan` delegates verification instead of doing it.** Step 3 hands the run to
+  `test-and-verify` and takes its verdict as given; Step 5 hands it the gate. It only runs tests inline
+  if that skill isn't available, and then by its rules.
+- **Test-command discovery has one owner now.** It lived in `execute-plan`'s `verification.md` and
+  would have been duplicated by the new skill. `verification.md` keeps what is genuinely
+  `execute-plan`'s — *bootstrapping* a runner when the project has none, which is a project decision
+  tied to the stack the docs already chose, not a remediation step — and defers the search itself.
+  Its "what counts as green" section narrowed to the question this skill actually owns: not whether
+  the run passed, but whether that pass closes a checkbox.
+
+### Upgrading
+Nothing to do. `test-and-verify` appears once the plugin updates, and `execute-plan` starts using it
+automatically. If you invoke `execute-plan` in an environment where the new skill is unavailable, it
+falls back to running the tests inline.
+
 ## [3.2.0] — 2026-08-22
 
 Adds the plugin's third and final skill, `execute-plan`, and with it the chain closes: `scaffold`
