@@ -111,6 +111,10 @@ implementation detail this file forbids.
 - **Last Updated** — today's date, rewritten on every edit including each execution pass.
 - **Overall Progress** — phases closed over total phases, by the counting rules above.
 
+A **phase's** own `Status:` line takes the same two words and carries a glyph: `[ ] Open` while any
+item in it is open, `[x] Done` once every item including the `X.V` gate is closed. `execute-plan`
+flips it at the gate; nothing else writes it.
+
 ## What never appears in this file
 
 - Implementation code, test code, schemas, migrations, or function signatures. Naming an endpoint or

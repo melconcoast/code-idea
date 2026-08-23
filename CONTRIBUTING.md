@@ -5,9 +5,10 @@ Thanks for considering a contribution. This plugin is small on purpose — most 
 ## Where things live
 
 The repo is a Claude Code plugin. Each skill owns a directory under `skills/`, holding its own
-`SKILL.md` and its own `references/`. Two skills exist today — `scaffold` and `plan-module`. One more
-is planned and deliberately unbuilt, `execute-plan`; it gets no directory until it is written, because
-git can't track an empty directory and a stub `SKILL.md` registers a broken skill for everyone.
+`SKILL.md` and its own `references/`. Three skills ship — `scaffold`, `plan-module`, and
+`execute-plan` — and they run in that order. No skill name is reserved-but-unbuilt any more; if you
+propose a fourth, it gets no directory until it is written, because git can't track an empty directory
+and a stub `SKILL.md` registers a broken skill for everyone.
 
 - **`.claude-plugin/plugin.json`** and **`marketplace.json`** — the plugin manifest, and the entry that makes this repo its own marketplace (named `melconcoast`, after the owner, so installs read `code-idea@melconcoast`). The version lives in `plugin.json` only and must match the release tag; CI enforces it.
 - **`skills/scaffold/SKILL.md`** — the workflow itself: when the skill triggers, how the interview works, how structure is decided, how content gets drafted and written. Changes here affect behavior directly, so keep edits scoped and explain the reasoning in the PR description.
@@ -16,8 +17,11 @@ git can't track an empty directory and a stub `SKILL.md` registers a broken skil
 - **`skills/scaffold/references/agent-profiles.md`** — what each coding agent reads and how it loads it. **This file is expected to age**, like the heuristics file, and every claim carries a source URL and verified-on date. A stale entry is a welcome PR. Never add a row you can't cite from that agent's own docs.
 - **`skills/scaffold/references/templates.md`** — the skeleton structure for each generated doc type. The `docs/development-roadmap.md` section here is the contract `plan-module` reads; a change to that block is a change to both skills.
 - **`skills/plan-module/SKILL.md`** — how a roadmap module is located, cut into phases, and written out as a plan file. It reads the roadmap contract rather than restating it, so a scope or vocabulary change belongs in `scaffold`'s `templates.md` first.
-- **`skills/plan-module/references/plan-template.md`** — the plan file's exact format, its four-state checkbox vocabulary, and how progress is counted. `execute-plan` will parse this, so treat the headings and glyphs as a contract, not styling.
+- **`skills/plan-module/references/plan-template.md`** — the plan file's exact format, its four-state checkbox vocabulary, and how progress is counted. `execute-plan` parses this, so treat the headings and glyphs as a contract, not styling.
 - **`skills/plan-module/references/scenario-writing.md`** — what makes a plain-English test scenario checkable, with weak/strong pairs. New guidance on scenario quality belongs here, not in the SKILL.md.
+- **`skills/execute-plan/SKILL.md`** — the micro-loop: how one task is selected, implemented, verified, and written back. It reads the plan file `plan-module` produced rather than restating that file's format, so a vocabulary or counting change belongs in `plan-module`'s `plan-template.md` first.
+- **`skills/execute-plan/references/verification.md`** — finding or bootstrapping a test runner, what counts as green, and what to do with a scenario that's wrong or can't be checked. Guidance on proving a task is done belongs here, not in the SKILL.md.
+- **`skills/execute-plan/references/progress-updates.md`** — every write execution makes to a plan file or the roadmap. **This file is deliberately subordinate**: the checkbox vocabulary and counting rules are specified in `plan-module`'s `plan-template.md`, and the roadmap `Status` vocabulary in `scaffold`'s `templates.md`. It may say how to apply them and nothing more — if it ever disagrees with either, it's the file that's wrong.
 - **`examples/`** — shared across every skill in the plugin, which is why it stays at the repo root rather than moving under `skills/scaffold/`.
 
 ## Reporting an outdated recommendation
