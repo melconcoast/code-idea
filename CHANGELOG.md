@@ -34,16 +34,25 @@ and an existing plan file is exactly what the new skill expects to find.
   the roadmap. **Deliberately subordinate**: it applies the vocabularies specified in `plan-module`'s
   `plan-template.md` and `scaffold`'s `templates.md` and never restates them, so the plugin keeps one
   source of truth per contract rather than three.
+- **A stop-and-report rule for a plan that disagrees with the repository** — a task marked closed whose
+  code isn't there, a `## Files Modified` path that doesn't exist. `execute-plan` neither builds on the
+  false closure nor quietly repairs it: reopening a phase the file calls done is the user's decision,
+  and rewriting the record to match reality would erase the evidence that it was wrong.
 - `examples/test-scenarios.md` — Fixture G (a plan file in a repo that has code and a working runner)
-  and S65–S81, covering the micro-loop, phase-dependency enforcement, runner bootstrap, reframe-not-
+  and S65–S84, covering the micro-loop, phase-dependency enforcement, runner bootstrap, reframe-not-
   delete, scope containment, the gate-and-stop, resume-don't-restart, roadmap write-back, the
-  verified-not-written rule, and the three-way trigger boundary.
+  verified-not-written rule, bare status values, and the three-way trigger boundary.
 
 ### Changed
 - **`[x]` is now enforced as *verified*, not *written*.** The distinction was always in
   `plan-template.md`; `execute-plan` is what acts on it. A task whose code exists but whose tests never
   ran stays `[ ]`, and behavior that genuinely can't be checked here becomes `[~]` with what would
   verify it — never `[x]` on faith.
+- **Status values are bare, and both vocabularies now say so.** `scaffold`'s `templates.md` already
+  called the roadmap `Status` a closed vocabulary, but not that the value is the word *alone* — so
+  `done (server-side only — see Sub-Module 2.2)` looked permissible while breaking the same parse a
+  new status word would. Both `templates.md` and `plan-template.md` now state it, and a caveat worth
+  recording goes in the Progress Log instead. Caught by running S67 against the real skill.
 - `skills/plan-module/references/plan-template.md` now specifies a **phase's** `Status:` line, not just
   the header's. It reads `[ ] Open` while anything in the phase is open and `[x] Done` once every item
   including the `X.V` gate is closed. Only the open form was written down before, so the closed form

@@ -115,6 +115,11 @@ A **phase's** own `Status:` line takes the same two words and carries a glyph: `
 item in it is open, `[x] Done` once every item including the `X.V` gate is closed. `execute-plan`
 flips it at the gate; nothing else writes it.
 
+Those are the whole line — nothing is appended to either. `[x] Done (server-side only)` or
+`[x] Done (rebuilt 2026-08-22)` is a free-text status wearing a glyph, and it breaks the same parse a
+fifth glyph would. A phase that closed with something worth saying says it in the Progress Log, which
+is what that section is for.
+
 ## What never appears in this file
 
 - Implementation code, test code, schemas, migrations, or function signatures. Naming an endpoint or
