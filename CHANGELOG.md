@@ -1,5 +1,77 @@
 # Changelog
 
+## [4.0.0] — 2026-08-23
+
+Major release. The four skills move from `skills/` to `.agents/skills/`, which makes them installable
+on Codex, Cursor, Gemini CLI, GitHub Copilot, Kimi Code and Deep Code rather than Claude Code alone.
+Read **Breaking** before upgrading — plugin users are unaffected, but a vendored copy or symlink is
+not.
+
+Nothing changes about what the skills do or what they generate. Every `SKILL.md` body and all ten
+reference files are byte-identical to 3.3.0; only frontmatter and file location changed.
+
+### Breaking
+- **The skills move from `skills/<name>/` to `.agents/skills/<name>/`.** `.agents/skills/` is the
+  interoperable path defined by the [Agent Skills](https://agentskills.io) standard and read natively
+  by every supported agent except Claude Code. Any skills directory pointed at the old path — a
+  symlink into `~/.claude/skills/`, a vendored copy, a submodule, a script that reads
+  `skills/scaffold/SKILL.md` — no longer finds a skill and loads nothing, *silently*. This is the same
+  break, one directory level on, that 3.0.0 made when the repo became a plugin. See **Upgrading**.
+- **Installing via the plugin or the `.skill` release assets is unaffected.** Skill names, the
+  `/code-idea:*` commands, the four asset filenames, and every generated file are unchanged. If that
+  is how you install, there is nothing to do.
+
+### Added
+- **Cross-agent installation.** `npx skills add melconcoast/code-idea` installs into any of 76+
+  agents the skills CLI supports, with no registration needed — `.agents/skills/` is one of the
+  directories it scans.
+- **`scripts/install.sh`** — detects which agents are configured, resolves each to its own skills
+  directory, and copies. Agents sharing `.agents/skills/` are written once rather than repeatedly.
+  Supports `--global`, `--agent NAME`, `--all`, `--dry-run`, and `--list`. Its agent table cites each
+  agent's own documentation with a verified-on date, and **is expected to age** like
+  `agent-profiles.md`.
+- **`license` and `metadata.version` in every skill's frontmatter.** Both are Agent Skills spec
+  fields. `metadata.version` exists because `plugin.json` does not travel with a skill copied into
+  `.agents/skills/`, so a standalone install would otherwise have no way to know its version.
+- **Scenarios S97–S101** cover the distribution layer — the layer below every other scenario, where a
+  skill that never registers cannot fail a behavioral test, it just goes quiet.
+
+### Fixed
+- **Two skills were invisible to every non-Claude agent.** `execute-plan` and `test-and-verify` each
+  had a `: ` inside an unquoted `description`, which a strict YAML parser reads as a nested mapping
+  and rejects — skipping the whole skill. Claude Code's lenient parser hid this, so it shipped
+  undetected from the versions that introduced those descriptions until the skills CLI refused them:
+  it found two of four skills. Both now read naturally with an em dash or a period, and the release
+  workflow parses all four with a strict parser so it cannot recur.
+- **Trigger phrases moved to the front of all four descriptions.** Codex budgets its startup skills
+  list to ~2% of context and shortens descriptions first, cutting from the end — which is exactly
+  where the routing phrases sat. The wording is unchanged and the token multisets are identical, so
+  this is provably a reorder: all 21 quoted phrases survive verbatim, each is still owned by exactly
+  one skill, and all four remain within the 1024-character limit.
+
+### Changed
+- `.claude-plugin/plugin.json` declares `"skills": ["./.agents/skills/"]`. This is load-bearing:
+  because the marketplace entry's `source` is the repository root, the paths it lists are the complete
+  set, and one that does not resolve makes Claude Code fall back to scanning `./skills/` — now gone —
+  and load **zero skills with no error**.
+- **The release workflow gained six guards**, each for a failure that produces silence rather than an
+  error: an unresolvable `skills` path, a skill outside every declared path, a skill count other than
+  four, a non-spec frontmatter key, a spec-invalid `name`, and a `: ` or ` #` inside an unquoted
+  description. It also parses all four frontmatter blocks with PyYAML.
+- **The version now lives in three places, not two** — the git tag, `plugin.json`, and each skill's
+  `metadata.version`. CI blocks a tag that disagrees with the manifest, and a skill that disagrees
+  with it. The critical rule in `AGENTS.md` is rewritten to say so.
+
+### Upgrading from 3.x
+1. **If you install via the plugin or the `.skill` assets, do nothing.** Run
+   `/plugin marketplace update melconcoast` and restart; the skills load from the new location
+   automatically.
+2. **If you symlinked, vendored, or submoduled `skills/`, repoint it to `.agents/skills/`.** The old
+   path no longer holds a skill, and nothing will tell you so — check that `/skills` still lists all
+   four after the change.
+3. **To add another agent**, run `npx skills add melconcoast/code-idea` or clone the repo and run
+   `./scripts/install.sh`. Neither replaces an existing Claude Code plugin install.
+
 ## [3.3.0] — 2026-08-22
 
 Adds a fourth skill, `test-and-verify`. The first three are a pipeline; this one is a service the

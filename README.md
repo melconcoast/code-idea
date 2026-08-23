@@ -2,7 +2,7 @@
 
 *"Code this idea"* — take a plan or idea from conversation to a state a coding agent can actually build from correctly.
 
-A Claude Code **plugin**. Three skills run in sequence — **`scaffold`** turns a plan into the docs a coding agent needs, **`plan-module`** turns one module of the roadmap it produces into a phase-based execution spec, and **`execute-plan`** builds that spec task by task — with a fourth, **`test-and-verify`**, doing the running and fixing of tests on their behalf.
+Four [Agent Skills](https://agentskills.io) — a Claude Code **plugin**, and installable on Codex, Cursor, Gemini CLI, Copilot, Kimi Code and Deep Code too. Three run in sequence — **`scaffold`** turns a plan into the docs a coding agent needs, **`plan-module`** turns one module of the roadmap it produces into a phase-based execution spec, and **`execute-plan`** builds that spec task by task — with a fourth, **`test-and-verify`**, doing the running and fixing of tests on their behalf.
 
 `scaffold` turns a project plan, idea, or planning conversation into a complete, AI-coding-agent-ready documentation set — a lean root context file in whichever format your target agent reads natively (`CLAUDE.md` for Claude Code, `AGENTS.md` for Codex or Antigravity, or both for mixed/generic targets), plus linked docs (architecture, decisions, conventions, development roadmap, product, design-system), and, for monorepos, nested per-subsystem context files.
 
@@ -14,7 +14,7 @@ Most "let's add a CLAUDE.md" moments end one of two ways: a single giant file wi
 
 ## scaffold — what it generates
 
-The **container** — which root file(s) exist and how they load — depends on which agent(s) you target; see [`references/agent-profiles.md`](skills/scaffold/references/agent-profiles.md) for the sourced facts behind each row:
+The **container** — which root file(s) exist and how they load — depends on which agent(s) you target; see [`references/agent-profiles.md`](.agents/skills/scaffold/references/agent-profiles.md) for the sourced facts behind each row:
 
 | Target agent(s) | Root file(s) |
 |---|---|
@@ -55,7 +55,7 @@ The **content** is identical regardless of layout — only what a given project 
 - **Stale docs are worse than no docs** — architecture docs must be updated alongside real changes, or removed.
 - **Recurring procedures become Skills**, not static docs.
 
-See [`references/best-practices.md`](skills/scaffold/references/best-practices.md) for the full reasoning, [`references/recommendation-heuristics.md`](skills/scaffold/references/recommendation-heuristics.md) for the stack/database/UI defaults it draws on, and [`references/agent-profiles.md`](skills/scaffold/references/agent-profiles.md) for the sourced per-agent facts behind the container table above.
+See [`references/best-practices.md`](.agents/skills/scaffold/references/best-practices.md) for the full reasoning, [`references/recommendation-heuristics.md`](.agents/skills/scaffold/references/recommendation-heuristics.md) for the stack/database/UI defaults it draws on, and [`references/agent-profiles.md`](.agents/skills/scaffold/references/agent-profiles.md) for the sourced per-agent facts behind the container table above.
 
 ## plan-module — from roadmap to execution spec
 
@@ -148,7 +148,10 @@ reads as a pass.
 
 ## Installation
 
-**Claude Code** — install as a plugin:
+These four skills follow the [Agent Skills](https://agentskills.io) open standard, so they run on
+any agent that reads `SKILL.md` — not just Claude Code. Pick whichever line matches your setup.
+
+**Claude Code** — install as a plugin, so `/plugin` keeps it updated:
 
 ```
 /plugin marketplace add melconcoast/code-idea
@@ -157,9 +160,33 @@ reads as a pass.
 
 Skills are then invoked as `/code-idea:scaffold`, `/code-idea:plan-module`, `/code-idea:execute-plan`, and `/code-idea:test-and-verify`, or triggered naturally by what you ask for.
 
+**Codex, Cursor, Gemini CLI, GitHub Copilot, Kimi Code, Deep Code** — either the
+[skills CLI](https://www.skills.sh):
+
+```
+npx skills add melconcoast/code-idea                      # this project
+npx skills add melconcoast/code-idea -a codex -a cursor -g  # specific agents, globally
+```
+
+…or clone and run the installer, which detects what you have and copies into the right place:
+
+```
+git clone https://github.com/melconcoast/code-idea
+./code-idea/scripts/install.sh            # --global, --agent NAME, --all, --dry-run, --list
+```
+
+**Any other SKILL.md-aware agent** — copy the four folders from `.agents/skills/` into whichever
+directory your agent reads. Most honour the shared `.agents/skills/` convention, so
+`cp -R code-idea/.agents/skills/* your-project/.agents/skills/` is usually the whole job.
+
 **Claude.ai / Claude Desktop** — download the `scaffold.skill`, `plan-module.skill`, `execute-plan.skill`, and `test-and-verify.skill` assets from a [release](https://github.com/melconcoast/code-idea/releases) and add them as skills.
 
-**From source** — no build step. Point a local marketplace at your clone: `/plugin marketplace add /path/to/code-idea`.
+**From source, for Claude Code** — no build step. Point a local marketplace at your clone: `/plugin marketplace add /path/to/code-idea`.
+
+> Note on what's portable: the **skills** run on any of the agents above. The **docs `scaffold`
+> writes** are a separate question — it targets Claude Code, Codex, and Antigravity, and picks
+> `CLAUDE.md`, `AGENTS.md`, or both accordingly. Running the skill in Cursor to scaffold a project
+> for Claude Code works fine; the two choices are independent.
 
 ## Usage
 
@@ -170,9 +197,9 @@ Once installed, just ask naturally — "let's get this ready for Claude Code," "
 ```
 .
 ├── .claude-plugin/
-│   ├── plugin.json                       # plugin manifest
+│   ├── plugin.json                       # plugin manifest; its "skills" field points at .agents/skills/
 │   └── marketplace.json                  # so the repo is its own marketplace
-├── skills/
+├── .agents/skills/                       # the interoperable path every agent but Claude Code reads
 │   ├── scaffold/
 │   │   ├── SKILL.md                      # plan -> agent docs set
 │   │   └── references/
@@ -195,6 +222,8 @@ Once installed, just ask naturally — "let's get this ready for Claude Code," "
 │       └── references/
 │           ├── test-commands.md          # finding/scoping the command, with sources
 │           └── remediation.md            # app-bug vs test-bug, circuit breaker, report formats
+├── scripts/
+│   └── install.sh                        # install into any supported agent, no plugin system needed
 ├── examples/
 │   ├── sample-output/                    # example generated file tree
 │   └── test-scenarios.md                 # scenarios a change must be checked against

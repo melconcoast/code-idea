@@ -1,6 +1,9 @@
 ---
 name: execute-plan
-description: Builds a module from the plan file `plan-module` wrote — `docs/guides/feature_<module>_plan.md` — in a strict micro-loop: implement exactly one task, write the test code its plain-English scenarios describe, run it until green, then update the plan file before touching the next task. Stops at every phase verification gate to report and ask. Keeps closed counts, the Progress Log, Files Modified, and `docs/development-roadmap.md` statuses true as it goes. Use this skill when the user says things like "execute the plan", "build task 2.1", "start phase 2", "continue building this module", "implement the next task", "work through the plan", or is ready to write code against a plan file that already exists. Not for creating a project's agent docs or its roadmap — use scaffold. Not for cutting a module into phases or re-planning one — use plan-module.
+description: Use this skill when the user says things like "execute the plan", "build task 2.1", "start phase 2", "continue building this module", "implement the next task", "work through the plan", or is ready to write code against a plan file that already exists. Not for creating a project's agent docs or its roadmap — use scaffold. Not for cutting a module into phases or re-planning one — use plan-module. Builds a module from the plan file `plan-module` wrote — `docs/guides/feature_<module>_plan.md` — in a strict micro-loop. Implement exactly one task, write the test code its plain-English scenarios describe, run it until green, then update the plan file before touching the next task. Stops at every phase verification gate to report and ask. Keeps closed counts, the Progress Log, Files Modified, and `docs/development-roadmap.md` statuses true as it goes.
+license: MIT
+metadata:
+  version: "4.0.0"
 ---
 
 # execute-plan

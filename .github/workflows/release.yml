@@ -2,7 +2,7 @@ name: Package and release skills
 
 # Runs whenever a version tag (v1.0.0, v1.2.3, etc.) is pushed.
 # Validates the plugin manifest and every skill's frontmatter, then packages each
-# skills/<name>/ into <name>.skill (a zip with the skill folder at its root) and
+# .agents/skills/<name>/ into <name>.skill (a zip with the skill folder at its root) and
 # attaches them to a GitHub Release.
 #
 # The plugin itself is NOT packaged as an archive. Claude Code installs plugins from
@@ -40,10 +40,48 @@ jobs:
           fi
           echo "plugin.json version $manifest_version matches tag"
 
+          # The skills field is the ONLY thing pointing Claude Code at the skill
+          # directories. This repo's marketplace entry uses "source": "./", and for a
+          # marketplace-root source the listed paths are the complete set -- but if
+          # none of them exist, Claude Code silently falls back to scanning ./skills/,
+          # which no longer exists. The plugin would then load with ZERO skills and no
+          # error anywhere. Same silent-non-registration class as the v2.0.1
+          # description-overflow bug, so it is checked here rather than trusted.
+          declared=$(jq -r '.skills[]?' .claude-plugin/plugin.json)
+          if [ -z "$declared" ]; then
+            echo "::error::plugin.json declares no 'skills' paths - the plugin would fall back to ./skills/"
+            exit 1
+          fi
+          for path in $declared; do
+            # paths are relative to the plugin root and must start with ./
+            case "$path" in
+              ./*) ;;
+              *) echo "::error::skills path '$path' must start with './'" && exit 1 ;;
+            esac
+            if [ ! -d "$path" ]; then
+              echo "::error::plugin.json skills path '$path' does not exist - Claude Code would silently load zero skills"
+              exit 1
+            fi
+            echo "skills path $path exists"
+          done
+
+          # Every skill on disk must sit under a declared path, or it ships dark.
+          for skill_md in .agents/skills/*/SKILL.md; do
+            [ -e "$skill_md" ] || continue
+            covered=0
+            for path in $declared; do
+              case "$skill_md" in "${path#./}"*|"$path"*) covered=1 ;; esac
+            done
+            [ "$covered" = "1" ] \
+              || (echo "::error file=$skill_md::not under any plugin.json 'skills' path - it would not load" && exit 1)
+          done
+          echo "all skills on disk are covered by a declared skills path"
+
       - name: Validate every skill
         run: |
+          manifest_version=$(jq -r '.version' .claude-plugin/plugin.json)
           found=0
-          for skill_md in skills/*/SKILL.md; do
+          for skill_md in .agents/skills/*/SKILL.md; do
             [ -e "$skill_md" ] || continue
             found=1
             name=$(basename "$(dirname "$skill_md")")
@@ -59,6 +97,37 @@ jobs:
             fm_name=$(awk -F': *' '/^name:/{print $2; exit}' "$skill_md")
             if [ "$fm_name" != "$name" ]; then
               echo "::error file=$skill_md::frontmatter name '$fm_name' != directory '$name'"
+              exit 1
+            fi
+
+            # Agent Skills spec rules for `name`: 1-64 chars, lowercase alphanumerics
+            # and hyphens only, no leading/trailing hyphen, no consecutive hyphens.
+            # Claude Code is laxer than the spec, so a name valid here but invalid
+            # there would load in the plugin and be rejected by every other agent.
+            if ! printf '%s' "$fm_name" | grep -Eq '^[a-z0-9]+(-[a-z0-9]+)*$'; then
+              echo "::error file=$skill_md::name '$fm_name' violates the Agent Skills spec (lowercase alphanumerics and single hyphens only)"
+              exit 1
+            fi
+            if [ "${#fm_name}" -gt 64 ]; then
+              echo "::error file=$skill_md::name '$fm_name' is ${#fm_name} chars, over the spec's 64 limit"
+              exit 1
+            fi
+
+            # Only the spec's six fields may appear. Anything else is a hard error on
+            # the claude.ai upload and packaging paths, not an ignored field.
+            bad_keys=$(awk '/^---$/{c++; next} c==1 && /^[a-zA-Z-]+:/{sub(/:.*/,""); print}' "$skill_md" \
+              | grep -Evx 'name|description|license|compatibility|metadata|allowed-tools' || true)
+            if [ -n "$bad_keys" ]; then
+              echo "::error file=$skill_md::non-spec frontmatter key(s): $(echo $bad_keys) - packaging and claude.ai upload reject these"
+              exit 1
+            fi
+
+            # metadata.version is the only version a standalone install can see, since
+            # plugin.json does not travel with a skill copied into .agents/skills/.
+            # Keep it pinned to the manifest so the two cannot drift.
+            skill_version=$(awk '/^metadata:/{f=1; next} f && /^  version:/{gsub(/.*version: *"?|"$/,""); print; exit}' "$skill_md")
+            if [ -n "$skill_version" ] && [ "$skill_version" != "$manifest_version" ]; then
+              echo "::error file=$skill_md::metadata.version '$skill_version' != plugin.json version '$manifest_version'"
               exit 1
             fi
 
@@ -81,13 +150,59 @@ jobs:
             if [ "$len" -gt 970 ]; then
               echo "::warning file=$skill_md::description is $len chars, within 55 of the 1024 limit"
             fi
+
+            # An unquoted YAML scalar cannot contain ": " — the parser reads it as a
+            # nested mapping and rejects the whole file. Claude Code's parser is lenient
+            # enough to hide this, so it shipped undetected in two descriptions until
+            # the skills CLI refused them. Every other agent uses a strict parser.
+            case "$desc" in
+              *": "*) echo "::error file=$skill_md::description contains ': ' — a strict YAML parser reads it as a nested mapping and skips the whole skill. Use an em dash or a period instead." && exit 1 ;;
+            esac
+            case "$desc" in
+              *" #"*) echo "::error file=$skill_md::description contains ' #' — YAML reads the rest of the line as a comment" && exit 1 ;;
+            esac
           done
-          [ "$found" = "1" ] || (echo "::error::no skills/*/SKILL.md found" && exit 1)
+          [ "$found" = "1" ] || (echo "::error::no .agents/skills/*/SKILL.md found" && exit 1)
+
+          # A move or a bad glob that drops a skill should fail the release, not ship
+          # a plugin quietly missing one.
+          count=$(ls -d .agents/skills/*/ 2>/dev/null | wc -l | tr -d ' ')
+          if [ "$count" != "4" ]; then
+            echo "::error::expected 4 skills, found $count - update this check deliberately if a skill was added or removed"
+            exit 1
+          fi
+          echo "all 4 skills validated"
+
+      - name: Parse every skill's frontmatter with a strict YAML parser
+        run: |
+          # The cases above name the two hazards we have actually hit. This catches
+          # every other one, in the same parser the non-Claude agents use.
+          python3 -m pip install --quiet pyyaml
+          python3 - <<'PY'
+          import glob, re, sys, yaml
+          SPEC = {"name","description","license","compatibility","metadata","allowed-tools"}
+          bad = False
+          for path in sorted(glob.glob(".agents/skills/*/SKILL.md")):
+              text = open(path).read()
+              m = re.match(r"---\n(.*?)\n---\n", text, re.S)
+              if not m:
+                  print(f"::error file={path}::no YAML frontmatter block"); bad = True; continue
+              try:
+                  data = yaml.safe_load(m.group(1))
+              except yaml.YAMLError as e:
+                  print(f"::error file={path}::frontmatter is not valid YAML - every non-Claude agent would skip this skill: {e}")
+                  bad = True; continue
+              extra = set(data) - SPEC
+              if extra:
+                  print(f"::error file={path}::non-spec frontmatter key(s): {sorted(extra)}"); bad = True
+              print(f"  {path}: parses, keys={sorted(data)}")
+          sys.exit(1 if bad else 0)
+          PY
 
       - name: Package each skill
         run: |
           mkdir -p dist staging
-          for skill_md in skills/*/SKILL.md; do
+          for skill_md in .agents/skills/*/SKILL.md; do
             [ -e "$skill_md" ] || continue
             dir=$(dirname "$skill_md")
             name=$(basename "$dir")

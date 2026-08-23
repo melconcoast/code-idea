@@ -182,7 +182,7 @@ scenario depends on.
 
 | ID | Setup | Must produce | Must NOT produce |
 |---|---|---|---|
-| S45 | Any change to the roadmap's `Status` vocabulary, `Depends on:` rules, or `Tasks:` field in `skills/scaffold/references/templates.md` | Both skills still agree: `plan-module` Step 1 reads every field the template defines, and defers to it as the single spec | `plan-module`'s own files restating the vocabulary as a second source of truth; one skill changed without the other |
+| S45 | Any change to the roadmap's `Status` vocabulary, `Depends on:` rules, or `Tasks:` field in `.agents/skills/scaffold/references/templates.md` | Both skills still agree: `plan-module` Step 1 reads every field the template defines, and defers to it as the single spec | `plan-module`'s own files restating the vocabulary as a second source of truth; one skill changed without the other |
 | S46 | Fixture E, "plan the next module" | `Module 2 — Staff queue` proposed **by name with why it's next** (Module 1 `done`, dependency satisfied), confirmed before any planning | Planning it silently; picking `Module 3`, whose blocker is still parked |
 | S49 | Fixture E, user asks for `Module 3` | The pending email-provider decision named up front, phases cut only up to that boundary, and the gated phases identified in the Step 4 report | A phase that resolves the parked decision by planning past it; a refusal to plan the unblocked part |
 | S50 | Fixture E, `Module 2` (two sub-modules) | Two phases on the sub-module boundaries, every `Dependencies:` reading `None` or a `Phase X` that exists in the file | Phases invented independently of the sub-modules; a `Dependencies:` naming a phase with no block |
@@ -232,7 +232,7 @@ compete for the same requests, so a change to one can silently capture the other
 
 | ID | Setup | Must produce | Must NOT produce |
 |---|---|---|---|
-| S66 | Any change to the checkbox vocabulary or counting rules in `plan-module`'s `plan-template.md`, or to the `Status` vocabulary in `scaffold`'s `templates.md` | `skills/execute-plan/references/progress-updates.md` still only *applies* those specs, and still defers to them by name | That file restating either vocabulary as a third source of truth; the two drifting apart with nothing erroring |
+| S66 | Any change to the checkbox vocabulary or counting rules in `plan-module`'s `plan-template.md`, or to the `Status` vocabulary in `scaffold`'s `templates.md` | `.agents/skills/execute-plan/references/progress-updates.md` still only *applies* those specs, and still defers to them by name | That file restating either vocabulary as a third source of truth; the two drifting apart with nothing erroring |
 | S67 | Fixture I, Phase 2 closed | The matching sub-module's `Status:` in `docs/development-roadmap.md` moved to its done value, as a bare vocabulary word | Any other roadmap field touched — `In scope:`, `Out of scope:`, `Depends on:`, the `**Tasks:**` pointer; a task table written into the roadmap; a status the vocabulary doesn't contain, **including a vocabulary word with a parenthetical bolted on** (`done (server-side only)`) |
 | S68 | Fixture I, a task whose code is written but whose tests were never run | The task left `[ ]` | `[x]` on inspection, on intent, or on a passing type-check alone |
 | S75 | Fixture I, a scenario that can't be checked in this environment (needs a live third-party service) | `[~]` with the reason and what would verify it, plus whatever part *can* be verified | `[x]` on faith; the scenario silently dropped |
@@ -275,3 +275,17 @@ compete for the same requests, so a change to one can silently capture another's
 | S94 | Fixture F — a plan file but no test runner at all — "run the tests" | A statement that there is no runner, and a hand-off | A `package.json` or test tooling created here; a project decision made inside a verification pass |
 | S95 | "run the tests" / "verify this" / "check the tests pass" / "fix the failing tests" | `test-and-verify` fires on each | `execute-plan` firing and building a task instead |
 | S96 | S28's four `scaffold` phrases, S56's four `plan-module` phrases, and S65's four `execute-plan` phrases, re-run after `test-and-verify` shipped | All twelve still fire the skill they always did | Any of them captured by `test-and-verify`'s description |
+
+## Distribution and cross-agent installation
+
+Run these after any change to where the skills live, to `.claude-plugin/plugin.json`, or to a
+frontmatter `description`. They guard the layer below every other scenario: a skill that never
+registers can't fail a behavioral test, it just goes quiet.
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S97 | Any change to `plugin.json`'s `skills` field, or to the skills directory path | All four skills still register in Claude Code as `/code-idea:*`, and the release workflow's manifest step passes | The silent fallback — a typo'd path makes Claude Code scan `./skills/`, find nothing, and load zero skills with no error at all |
+| S98 | Any edit to a frontmatter `description` | Trigger phrases sit ahead of the descriptive prose, so Codex's context-budget truncation cuts prose rather than routing | Triggers reachable only in the last third of the field, where truncation removes them first |
+| S99 | Any edit to frontmatter, parsed with a strict YAML parser (`npx skills add . --list` is the quick check) | All four skills discovered and listed | A skill silently skipped for a YAML error Claude Code's lenient parser tolerates — a `: ` in an unquoted `description` is the one that has actually happened |
+| S100 | `./scripts/install.sh --all --dry-run` after a skill is added, removed, or renamed | Every skill listed for every agent; agents sharing `.agents/skills/` collapsed to one copy | A skill missing from the install because the script hardcodes names rather than reading the directory |
+| S101 | Installing into a non-Claude agent, then running `execute-plan` against a fixture | Either delegation to `test-and-verify`, or the documented inline fallback under its rules | `execute-plan` stalling because skill-to-skill invocation differs on that agent and it has no fallback |
