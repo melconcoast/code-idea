@@ -3,7 +3,7 @@ name: execute-plan
 description: Use this skill when the user says things like "execute the plan", "build task 2.1", "start phase 2", "continue building this module", "implement the next task", "work through the plan", or is ready to write code against a plan file that already exists. Not for creating a project's agent docs or its roadmap — use scaffold. Not for cutting a module into phases or re-planning one — use plan-module. Builds a module from the plan file `plan-module` wrote — `docs/guides/feature_<module>_plan.md` — in a strict micro-loop. Implement exactly one task, write the test code its plain-English scenarios describe, run it until green, then update the plan file before touching the next task. Stops at every phase verification gate to report and ask. Keeps closed counts, the Progress Log, Files Modified, and `docs/development-roadmap.md` statuses true as it goes.
 license: MIT
 metadata:
-  version: "4.0.0"
+  version: "4.1.0"
 ---
 
 # execute-plan
@@ -43,6 +43,8 @@ Builds a module from its plan file one task at a time — real code, real tests,
 - Write the application code the task's *Details* describes — the endpoints, tables, and data shapes it names, and nothing it doesn't.
 - Then write the test code covering that task's scenarios: one test per scenario, in that scenario's own terms. Scenarios are plain English on purpose — picking the framework and the assertions is this skill's job, and the first task's choice binds the rest.
 - Follow the project's stated conventions over your own defaults. Where its docs are silent, match the surrounding code.
+- **Use a domain skill if the environment offers one** — frontend, data modeling, infrastructure. A specialist beats improvising. It's an accelerator, never a dependency: if none exists, or invoking one isn't supported on this agent, build the task without it.
+- **It advises; this skill decides.** Its output is bounded by the task's *Details* and by the project's stated conventions — those win on conflict, and anything it proposes past the task's scope is reported, not built.
 
 ### Step 3 — Verify, through `test-and-verify`
 - **Hand the run to `test-and-verify`**, naming the task and the tests that cover it. It finds the command, runs it, reads the output, and fixes what fails within a bounded loop. Only run the tests inline if that skill isn't available, and then by its rules.

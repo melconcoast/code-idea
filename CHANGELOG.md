@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.1.0] — 2026-08-24
+
+### Added
+- **`execute-plan` may consult a domain skill while implementing a task.** Step 2 now says to use a
+  skill covering the task's domain — frontend, data modeling, infrastructure — when the environment
+  offers one. The hook is deliberately capability-agnostic: no skill is named, none is assumed
+  installed, and a task builds normally where none exists or where the host agent doesn't support
+  skill-to-skill invocation. The domain skill advises; `execute-plan` still decides, and its output
+  stays bounded by the task's *Details* and the project's stated conventions, which win on conflict.
+  Anything it proposes past the task's scope is reported, not built. Covered by `examples/test-scenarios.md`
+  S102–S104. `plan-module` deliberately gains no such hook — domain expertise reaches a plan through
+  `docs/conventions.md` and `docs/architecture.md`, never through implementation detail injected at
+  plan time.
+
 ## [4.0.0] — 2026-08-23
 
 Major release. The four skills move from `skills/` to `.agents/skills/`, which makes them installable

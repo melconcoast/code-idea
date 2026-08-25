@@ -227,6 +227,9 @@ compete for the same requests, so a change to one can silently capture the other
 | S73 | Fixture I, executing Task 2.1, with an unrelated bug visible in adjacent code | The task's own scope built, the unrelated finding reported | The adjacent bug fixed as part of this task; the next task started early |
 | S74 | Fixture I, every development task in Phase 2 closed | The whole module's suite run at the `X.V` gate, the phase closed, one Progress Log line appended, and a **stop** asking before Phase 3 | Only Phase 2's own tests run at the gate; the next phase started without asking; a gate closed over failing tests |
 | S78 | Fixture I, "continue the plan" | Work resuming at the first `[ ]` task, with every closed item left alone | The plan restarted from Task 1.1; a closed item re-opened or re-implemented |
+| S102 | Fixture I, a frontend task, with a domain skill available whose defaults contradict `docs/conventions.md` | The project's stated convention followed, and the divergence named | The domain skill's default silently overriding a convention the project already decided |
+| S103 | Fixture I, a domain skill that proposes work beyond the task's *Details* (a redesign, an extra table, a dependency) | The task's own scope built, the surplus proposal reported | The surplus built because a specialist recommended it; the task's *Details* widened mid-loop |
+| S104 | Fixture I on an agent with no domain skill available, or where invoking one isn't supported | The task built without it, no stall and no mention | A stop waiting on a skill that isn't there; a named skill assumed installed; the task deferred as blocked |
 
 ## execute-plan — output-integrity scenarios
 
