@@ -51,6 +51,7 @@ There's no automated test suite — this is a markdown-based plugin, not code. C
 2. Try at least one case where your change should clearly kick in, and one where it clearly shouldn't, to make sure the trigger condition is specific enough.
 3. If you're changing a `SKILL.md` itself, re-read it end to end afterward — it's meant to stay short, so a change that grows it significantly should come with something else trimmed.
 4. Run the relevant scenarios from `examples/test-scenarios.md`, including at least one "must NOT produce" case — a rule that fires when it shouldn't is as broken as one that never fires.
+5. If your change claims to alter what an agent *does* — not just what the file says — A/B it. `examples/fixtures/pickup-queue/` is a runnable Fixture I; its README has the setup. Run the old text and the new text against the same fixture, with an agent that doesn't know about your change, and diff the results. **Report the outcome even when the control matches** — that a rule reads as necessary is not evidence an agent was missing it, and a scenario the eval couldn't settle should be recorded as open rather than quietly counted as passing.
 
 ## Style
 

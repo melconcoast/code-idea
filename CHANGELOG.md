@@ -1,5 +1,48 @@
 # Changelog
 
+## [4.2.0] — 2026-09-01
+
+### Changed
+- **`execute-plan`'s domain-skill consultation is now its own step, ahead of implementation.** It was
+  a bullet inside Step 2, read at the same moment as the instructions for writing the code; it is now
+  Step 2 in its own right, and implementation is Step 3. Two requirements are new rather than merely
+  moved: the check runs at the top of **every** development task rather than once per phase, and the
+  consulted skill's direction has to be **stated before** any of the task's code exists. The hook stays
+  capability-shaped — no skill is named, none is assumed installed, and a task with no matching skill
+  (or a host agent that can't invoke one) builds normally and silently.
+
+  **This is a clarification, not a demonstrated behavior fix.** An A/B eval on a fixture project —
+  identical plans, one arm on the 4.1.0 text and one on this one — had *both* arms consult a frontend
+  skill before writing the view, both leave the project's stylesheet untouched, and both report
+  out-of-scope design proposals instead of building them. The repositioning bought nothing measurable
+  there. The eval was also a weak test of the thing it was aimed at: each agent read the skill
+  immediately before acting, with no competing context, which is the easiest case for an instruction
+  to survive. The per-task check and the stated-direction requirement remain unproven. Treat
+  `examples/test-scenarios.md` S105–S106 as open, not passing.
+- Steps 3–5 renumbered to 4–6 as a consequence; `references/progress-updates.md` and the reference-file
+  list now point at Step 5 for the plan-file writes.
+
+### Added
+- **A runnable fixture, `examples/fixtures/pickup-queue/`.** Every fixture in
+  `examples/test-scenarios.md` was prose describing a repo to build by hand, which is why no
+  behavioral claim in this project had ever been tested against one. This is Fixture I as an actual
+  dependency-free Node project — `node --test`, no install, no build, five tests green on a clean
+  copy — with a roadmap that is vocabulary-clean against `scaffold`'s templates, a plan file whose
+  Phase 1 is truthfully closed and Phase 2 fully open, and binding UI conventions in
+  `docs/conventions.md` for a domain skill to push against. Phase 2's three tasks deliberately span a
+  data query, a view, and an HTTP route. Its README covers how Fixtures G and H are derived from it,
+  and how to A/B one skill text against another — including why the control matching is a result
+  worth recording rather than discarding. `CONTRIBUTING.md` gains a fifth step in "Testing a change"
+  requiring that A/B for any change claiming to alter agent behavior.
+
+### Fixed
+- **S67 no longer reads as forbidding a write the skill is required to make.** Its "must NOT produce"
+  column said *any* other roadmap field, which collided with `references/progress-updates.md`'s rule
+  that the module's own `Status:` becomes done once every phase in the plan file is closed. It now
+  names the module-level status as required-but-only-at-the-end, and forbids *non-status* fields —
+  so a contributor reading S67 alone can't mistake correct behavior for a bug. No skill behavior
+  changed; the scenario was wrong, not the skills.
+
 ## [4.1.0] — 2026-08-24
 
 ### Added

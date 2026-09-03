@@ -71,7 +71,10 @@ by tests that pass, `Progress: [2/2 Tasks Closed]`, and a `## Files Modified` li
 genuinely exist. Phase 2 is entirely `[ ]`, three development tasks plus its gate.
 
 This is the default fixture for execution scenarios — a plan an agent can act on without first
-tripping over a lie.
+tripping over a lie. **It is checked in and runnable at `examples/fixtures/pickup-queue/`** — a
+dependency-free Node project, five tests green on a clean copy — rather than built by hand like the
+fixtures above. See that directory's README for how it maps to this description, how Fixtures G and H
+are derived from it, and how to run one skill text against another on it.
 
 ## Fixture H — a failing suite
 
@@ -230,13 +233,15 @@ compete for the same requests, so a change to one can silently capture the other
 | S102 | Fixture I, a frontend task, with a domain skill available whose defaults contradict `docs/conventions.md` | The project's stated convention followed, and the divergence named | The domain skill's default silently overriding a convention the project already decided |
 | S103 | Fixture I, a domain skill that proposes work beyond the task's *Details* (a redesign, an extra table, a dependency) | The task's own scope built, the surplus proposal reported | The surplus built because a specialist recommended it; the task's *Details* widened mid-loop |
 | S104 | Fixture I on an agent with no domain skill available, or where invoking one isn't supported | The task built without it, no stall and no mention | A stop waiting on a skill that isn't there; a named skill assumed installed; the task deferred as blocked |
+| S105 | Fixture I, a frontend task with a domain skill available | The skill consulted before any of the task's code exists, and its direction stated before implementing | Code written first and the skill consulted afterward to bless it; a consultation nothing in the output can point to |
+| S106 | Fixture I, Phase 2's tasks spanning different domains — a schema task, then a UI task | The domain check run at the top of each task | One check at the phase's start standing in for all of them; the UI task built off the schema task's consultation |
 
 ## execute-plan — output-integrity scenarios
 
 | ID | Setup | Must produce | Must NOT produce |
 |---|---|---|---|
 | S66 | Any change to the checkbox vocabulary or counting rules in `plan-module`'s `plan-template.md`, or to the `Status` vocabulary in `scaffold`'s `templates.md` | `.agents/skills/execute-plan/references/progress-updates.md` still only *applies* those specs, and still defers to them by name | That file restating either vocabulary as a third source of truth; the two drifting apart with nothing erroring |
-| S67 | Fixture I, Phase 2 closed | The matching sub-module's `Status:` in `docs/development-roadmap.md` moved to its done value, as a bare vocabulary word | Any other roadmap field touched — `In scope:`, `Out of scope:`, `Depends on:`, the `**Tasks:**` pointer; a task table written into the roadmap; a status the vocabulary doesn't contain, **including a vocabulary word with a parenthetical bolted on** (`done (server-side only)`) |
+| S67 | Fixture I, Phase 2 closed | The matching sub-module's `Status:` in `docs/development-roadmap.md` moved to its done value, as a bare vocabulary word — plus the module's own `Status:`, but only once every phase in the plan file is closed | Any *non-status* roadmap field touched — `In scope:`, `Out of scope:`, `Depends on:`, the `**Tasks:**` pointer; the module flipped to done while a phase is still open; a task table written into the roadmap; a status the vocabulary doesn't contain, **including a vocabulary word with a parenthetical bolted on** (`done (server-side only)`) |
 | S68 | Fixture I, a task whose code is written but whose tests were never run | The task left `[ ]` | `[x]` on inspection, on intent, or on a passing type-check alone |
 | S75 | Fixture I, a scenario that can't be checked in this environment (needs a live third-party service) | `[~]` with the reason and what would verify it, plus whatever part *can* be verified | `[x]` on faith; the scenario silently dropped |
 | S76 | Fixture I, after two tasks close | `## Files Modified` listing every touched file by real path, and the phase's `[<closed>/<total>]` recounted from the file | Summarized or globbed paths ("various test files"); a count incremented rather than recounted; a percentage |

@@ -3,7 +3,7 @@ name: execute-plan
 description: Use this skill when the user says things like "execute the plan", "build task 2.1", "start phase 2", "continue building this module", "implement the next task", "work through the plan", or is ready to write code against a plan file that already exists. Not for creating a project's agent docs or its roadmap — use scaffold. Not for cutting a module into phases or re-planning one — use plan-module. Builds a module from the plan file `plan-module` wrote — `docs/guides/feature_<module>_plan.md` — in a strict micro-loop. Implement exactly one task, write the test code its plain-English scenarios describe, run it until green, then update the plan file before touching the next task. Stops at every phase verification gate to report and ask. Keeps closed counts, the Progress Log, Files Modified, and `docs/development-roadmap.md` statuses true as it goes.
 license: MIT
 metadata:
-  version: "4.1.0"
+  version: "4.2.0"
 ---
 
 # execute-plan
@@ -39,25 +39,29 @@ Builds a module from its plan file one task at a time — real code, real tests,
 - Write the real commands back into the root context file's `## Commands` section, replacing the placeholder `scaffold` left there. A project whose docs can't tell the next agent how to run its tests is unfinished.
 - Read `references/verification.md` before deciding what counts as green.
 
-### Step 2 — Implement exactly one task
+### Step 2 — Consult a specialist, before writing anything
+- **Before this task's first line of code, check whether the environment offers a skill covering its domain** — frontend and UI, data modeling, infrastructure, whatever the *Details* is actually about. Run the check at the top of every task, not once per phase: tasks in one phase don't share a domain.
+- **Invoke it, and state its direction before implementing** — what it advises, and where that meets the task's *Details* and the project's conventions. A consultation nothing in the output can point to didn't happen. This is the step that stops the loop from settling for the smallest diff that passes, which is the right instinct for a bugfix and the wrong one for anything with a visible surface.
+- **It advises; this skill decides.** The task's *Details* and the project's stated conventions win on conflict — follow the project and name the divergence out loud. Anything it proposes past the task's scope is reported, not built.
+- No skill for this domain, or the host agent can't invoke one? Build the task and say nothing. It's an accelerator, never a dependency, and a missing one is never a blocker.
+
+### Step 3 — Implement exactly one task
 - Write the application code the task's *Details* describes — the endpoints, tables, and data shapes it names, and nothing it doesn't.
 - Then write the test code covering that task's scenarios: one test per scenario, in that scenario's own terms. Scenarios are plain English on purpose — picking the framework and the assertions is this skill's job, and the first task's choice binds the rest.
 - Follow the project's stated conventions over your own defaults. Where its docs are silent, match the surrounding code.
-- **Use a domain skill if the environment offers one** — frontend, data modeling, infrastructure. A specialist beats improvising. It's an accelerator, never a dependency: if none exists, or invoking one isn't supported on this agent, build the task without it.
-- **It advises; this skill decides.** Its output is bounded by the task's *Details* and by the project's stated conventions — those win on conflict, and anything it proposes past the task's scope is reported, not built.
 
-### Step 3 — Verify, through `test-and-verify`
+### Step 4 — Verify, through `test-and-verify`
 - **Hand the run to `test-and-verify`**, naming the task and the tests that cover it. It finds the command, runs it, reads the output, and fixes what fails within a bounded loop. Only run the tests inline if that skill isn't available, and then by its rules.
 - Take its verdict as given. A pass closes the task; **a fail does not**, and re-invoking it to get around its three-attempt circuit breaker defeats the point of having one — stop and report instead.
 - If it reports the scenario wrong rather than the code, stop and confirm before editing the scenario. The scenario is the spec; rewriting it to match a bug is how a suite stops meaning anything.
 - If the task can't be built as written, stop the loop: mark it `[~]` with the reason and the replacement approach, report it, and ask before continuing.
 
-### Step 4 — Write the plan file, then loop
+### Step 5 — Write the plan file, then loop
 - Mark the task and each scenario it covered, recompute that phase's `[<closed>/<total> Tasks Closed]`, append every file you created or changed to `## Files Modified` by real path, and rewrite `Last Updated`.
 - Read `references/progress-updates.md` for the exact edits, the counting rules, and the roadmap write-back before the first of these writes.
 - Return to Step 0's task selection and take the next `[ ]` task in the same phase.
 
-### Step 5 — The phase gate, then stop
+### Step 6 — The phase gate, then stop
 - When every development task in the phase is closed, the one item left is `Task X.V`. Hand it to `test-and-verify` **as a gate run**, which widens it to the whole module's suite plus the project's type-checker and linter — the gate exists to catch what this phase broke elsewhere, and a targeted run can't see that.
 - Green: close the gate, set the phase to `Status: [x] Done`, update `Overall Progress`, append one dated Progress Log line saying what the phase delivered, and flip the matching sub-module in `docs/development-roadmap.md`. Status values are bare — a caveat worth recording goes in the Progress Log, never appended to a status.
 - Red: the phase does not close. Fix the regression, or mark the offending task `[~]` and report it. A gate that gets closed over failing tests is worse than no gate, and a gate reporting a type-check or lint that never ran is worse still.
@@ -65,4 +69,4 @@ Builds a module from its plan file one task at a time — real code, real tests,
 
 ## Reference files
 - `references/verification.md` — bootstrapping a test runner when the project has none, what counts as verified, and what to do when a scenario can't be checked. Read this in Step 1.
-- `references/progress-updates.md` — the exact plan-file edits, the counting rules, and how progress flows back to `docs/development-roadmap.md`. Read this before the first write in Step 4.
+- `references/progress-updates.md` — the exact plan-file edits, the counting rules, and how progress flows back to `docs/development-roadmap.md`. Read this before the first write in Step 5.
