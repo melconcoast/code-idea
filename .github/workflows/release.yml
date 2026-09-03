@@ -161,6 +161,15 @@ jobs:
             case "$desc" in
               *" #"*) echo "::error file=$skill_md::description contains ' #' — YAML reads the rest of the line as a comment" && exit 1 ;;
             esac
+
+            # Claude.ai / Claude Desktop refuse an uploaded skill whose description
+            # contains anything shaped like an XML tag — the description is injected
+            # into a system prompt where tags are structural. A placeholder written
+            # <module> is enough. Claude Code and the CLI accept it, so the skill
+            # installs everywhere except the one surface that rejects it at upload.
+            case "$desc" in
+              *"<"*|*">"*) echo "::error file=$skill_md::description contains '<' or '>' — Claude.ai and Claude Desktop reject the upload with 'SKILL.md description cannot contain XML tags'. Write a placeholder as [module], not <module>." && exit 1 ;;
+            esac
           done
           [ "$found" = "1" ] || (echo "::error::no .agents/skills/*/SKILL.md found" && exit 1)
 
