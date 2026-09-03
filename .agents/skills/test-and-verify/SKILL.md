@@ -3,7 +3,7 @@ name: test-and-verify
 description: Use this skill whenever tests are to be run or a failure chased down — "run the tests", "run the test suite", "verify this", "check the tests pass", "fix the failing tests", "why is this test failing", or when `execute-plan` needs a task or a `Task X.V` gate verified. Use it even when the request looks like a one-liner — the bounded loop and the honest verdict are the point, not the command. Not for writing a feature or its tests from a plan — use execute-plan. Not for standing up a project's first test runner — use execute-plan. Runs a project's tests, reads the real output rather than the exit code, and fixes what fails — a bounded diagnose-fix-rerun loop that stops after three remediation attempts instead of guessing on, and never weakens a test to reach green. Targets the suite relevant to the work, and adds the type-checker and linter at a phase gate. Reports a plain pass or fail verdict with the exact command it ran, and never edits a plan file — the caller marks the boxes.
 license: MIT
 metadata:
-  version: "4.2.0"
+  version: "4.2.1"
 ---
 
 # test-and-verify
