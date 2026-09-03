@@ -1,6 +1,6 @@
 {
   "name": "code-idea",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "Turn a plan or idea into an AI-coding-agent-ready docs set, then plan and build the modules it defines.",
   "author": { "name": "Melconcoast Inc" },
   "homepage": "https://github.com/melconcoast/code-idea#readme",

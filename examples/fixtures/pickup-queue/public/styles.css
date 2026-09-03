@@ -1,0 +1,11 @@
+:root {
+  --ink: #23201c;
+  --paper: #faf7f2;
+  --accent: #a8552b;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.5 system-ui, sans-serif;
+}

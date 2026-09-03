@@ -1,6 +1,6 @@
 # Progress updates
 
-Every write this skill makes to a plan file or the roadmap. Read it before the first write in Step 4.
+Every write this skill makes to a plan file or the roadmap. Read it before the first write in Step 5.
 
 **This file is subordinate, not a second specification.** The plan file's format, its four-state
 checkbox vocabulary, and its counting rules are specified once, in `plan-module`'s
