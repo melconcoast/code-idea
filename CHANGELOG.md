@@ -36,6 +36,17 @@
   requiring that A/B for any change claiming to alter agent behavior.
 
 ### Fixed
+- **`plan-module` and `execute-plan` could not be uploaded to Claude.ai or Claude Desktop.** Both
+  descriptions named the plan file as `feature_<module>_plan.md`, and the upload refuses a
+  description containing anything tag-shaped — *SKILL.md description cannot contain XML tags* —
+  because the description is injected into a system prompt where tags are structural. Claude Code,
+  the skills CLI, and every other agent had accepted it since the field was written, so the two
+  skills installed everywhere except the one surface that rejected them. The placeholder is now
+  `feature_[module]_plan.md` in both descriptions; the body text and `scaffold`'s templates are
+  unchanged, since the restriction is the description's alone. The release workflow gained a `<`/`>`
+  check beside the existing `': '` and `' #'` ones so it fails at tag time rather than at a
+  contributor's upload.
+
 - **S67 no longer reads as forbidding a write the skill is required to make.** Its "must NOT produce"
   column said *any* other roadmap field, which collided with `references/progress-updates.md`'s rule
   that the module's own `Status:` becomes done once every phase in the plan file is closed. It now
