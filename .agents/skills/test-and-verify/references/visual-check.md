@@ -13,9 +13,13 @@ whether they look like the design. That gap is the whole reason this check exist
 
 ## Running it
 
-1. **Start the app** the way the project's root context file says to run it. No documented way to
-   run it? Say so and report the visual scenarios as not checked — inventing a start command is a
-   project decision, not a verification step.
+1. **Get the screen's real output.** Start the app the way the project's root context file says to
+   run it. When the app can't serve the screen yet — the view exists but its route arrives in a later
+   task — call the view's own render function with the scenario's data and save the result to a
+   temporary file beside a copy of the project's stylesheet, so its links resolve. That is the code
+   under test producing the page; hand-written markup is not. Neither possible? Report the scenario
+   not checked, naming what would make it checkable — inventing a start command is a project
+   decision, not a verification step.
 2. **Render the screen** in a real browser at each width the scenario names — 375px and 1280px when
    it doesn't say — in each state it names. Reach a state through the app's real behavior (no open
    orders, a failing request), never by editing the markup to fake one.
@@ -27,6 +31,11 @@ whether they look like the design. That gap is the whole reason this check exist
 Use whatever browser capability the environment offers — a browser-automation tool or server, a
 headless browser on the command line, an agent's built-in browser. Detect it; never assume one, and
 never install one as part of a verification pass.
+
+Confirm the width you got, not the width you asked for. Some headless browsers enforce a minimum
+window width and silently render wider, then crop — a 375px screenshot that was laid out at 500px
+proves nothing about a phone. Check the page's own viewport width, or use the browser's device
+emulation, before trusting the shot.
 
 ## What counts as a match
 

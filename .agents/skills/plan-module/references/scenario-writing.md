@@ -60,6 +60,11 @@ must match.
 | Matches the design | At 1280px, the queue uses the mockup's two-column layout, with the order detail beside the list rather than below it |
 | Handles empty state | With no open orders, the queue shows the mockup's empty state — the message and the single "Take an order" action — not an empty list |
 
+A re-plan that adds a visual scenario to a task already at three splits the task rather than
+breaking the cap; an open scenario that moves becomes `[~]` naming where it went. If the screen can't
+be rendered until a later task — a view built before its route — say so in the scenario, so its
+verifier knows to render the view's own output rather than wait.
+
 Write visual scenarios the same way as any other: a starting condition, a width or state, and what is
 observably on screen. Cover the states `screens.md` lists that this task introduces — the empty and
 error states are where builds most often fall back to the default. Never name a screenshot tool or a

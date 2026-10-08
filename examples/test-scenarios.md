@@ -315,7 +315,7 @@ compete for the same requests, so a change to one can silently capture another's
 
 | ID | Setup | Must produce | Must NOT produce |
 |---|---|---|---|
-| S115 | Fixture E plus a UI, no `DESIGN.md` and no `docs/design/screens.md`, "plan module 2" | A stop and a hand-off to `design-ui`, naming the screens with no reference | UI tasks planned anyway against nothing |
+| S115 | Fixture E plus a UI, no `DESIGN.md` and no `docs/design/screens.md`, "plan module 2" | A stop and a hand-off to `design-ui`, naming the screens with no reference — and, if the user declines, a plan written as before with the missing references named in the report | UI tasks planned silently against nothing; a refusal to plan at all once the user has declined |
 | S116 | Fixture E after `design-ui`, "plan module 2" | Each screen task naming its screen and mockup path in *Details*, with at least one plain-English visual scenario covering a width or state | "Looks good"; a screenshot or diffing tool named in a scenario; a screen task with data scenarios only |
 | S117 | Fixture I after `design-ui`, executing a screen task, browser available | The screen rendered at the scenario's widths, screenshotted, compared claim by claim, and reported in the verdict's `Visual` line — and only then `[x]` | `[x]` from reading the markup or from data tests alone; a match reported with no screenshot taken |
 | S118 | As S117, no browser available | Each visual scenario reported `not checked` with what would check it, and the scenario recorded `[~]` | `[x]` on faith; a browser installed as part of the verification pass |

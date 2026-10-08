@@ -102,15 +102,17 @@ module is planned — that's the check `plan-module` makes.
 
 - **One HTML file per key screen** — no build step, no external request except a web font if
   `DESIGN.md` names one. It must open from disk in any browser, by double-click, from inside the repo.
-- **Tokens are linked, never copied.** Every color, face, type size, and radius comes from one token
-  stylesheet, linked by relative path:
+- **Tokens are linked, never copied.** Every color and face — and every size and radius the project
+  has a token for — comes from one token stylesheet, linked by relative path:
   - the project's own stylesheet when it already defines the tokens (`../../../public/styles.css`) —
     one source of truth, and a convention against hex values in markup holds for the mockup too;
   - otherwise `docs/design/tokens.css`, written from `DESIGN.md`'s front matter as CSS custom
     properties. The build later adopts those same values, so mockup and product can't drift.
 
-  The mockup's own `<style>` holds layout only — grids, spacing, column widths, rule thickness — and
-  references tokens with `var(...)`. A color value inside a mockup is a second source of truth.
+  The mockup's own `<style>` holds layout — grids, spacing, column widths, rule thickness — plus any
+  size the project has no token for and its conventions forbid adding, with that size recorded in
+  `DESIGN.md`. It references tokens with `var(...)`. A color value inside a mockup is a second source
+  of truth.
 - **Previews inline, the repo file doesn't.** A rendered preview (a chat artifact, a published page)
   can't follow a relative link, so inline the token stylesheet into the *preview copy* only. The file
   in `docs/design/mockups/` keeps its link.

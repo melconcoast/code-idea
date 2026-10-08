@@ -55,7 +55,15 @@ confirmed one choice at a time, and touched nothing outside `DESIGN.md`, `docs/d
 the substantive ones fixed before release: binding conventions now outrank the avoid-list, direction
 mockups have a home (`docs/design/directions/`), inapplicable states are listed as such, a design
 choice that needs new plan scope is reported as a re-plan item, and parking the look is an allowed
-write. Every other new scenario is unrun — treat S107–S124 as open, not passing.
+write. A second pair of runs covered the chain. S115 passed: `plan-module` stopped on a screen with no
+reference and wrote nothing; declining the hand-off now plans as before instead of blocking. The full
+`design-ui` → `plan-module` → `execute-plan` run passed S111 with linked tokens (mockups open from disk,
+computed colors match the tokens), S116 (a visual scenario per screen task, the cap respected by
+splitting), and S121 (no closed item touched). It left the visual scenario honestly unchecked rather
+than passing it, and exposed four gaps, now fixed: a view built before its route can be rendered from
+its own output; *not yet* checkable stays `[ ]` while *not here* is `[~]`; sizes the project can't
+tokenize may be literal; headless browsers can silently render wider than the requested width.
+S117's rendered comparison of a built screen, S118, S119, and S120 remain unrun — open, not passing.
 
 ## [4.2.1] — 2026-09-03
 
