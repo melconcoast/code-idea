@@ -82,7 +82,10 @@ and exposed that a later session would have no trail to the prototype, so `scaff
 a pending look entry that `design-ui` starts from. S113 passed: every legacy `design-system.md` value
 was confirmed against the binding conventions, mapped, and the old file deleted only after asking.
 S122–S124 passed as a proxy — routing 21 phrases on the five descriptions alone, each landed on the
-intended skill — not as a live trigger test, which needs the plugin installed. S107 passed: the prototype saved
+intended skill — and then live, with the plugin installed from the local repo: in a fresh Claude
+Code session "design the UI" and "import my prototype" loaded `code-idea:design-ui` and "plan the next
+module" loaded `code-idea:plan-module`, ahead of other installed design skills and older uploaded
+copies of the plugin's skills. S107 passed: the prototype saved
 byte-identical, its look confirmed apart from its sandbox stack, Tailwind and hardcoded hex dropped
 for the project's tokens. S110's browser half then passed interactively, once the user picked the
 browser: the repo mockup, served from a local static server because the browser tool refuses `file://`,
