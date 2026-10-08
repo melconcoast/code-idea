@@ -63,6 +63,7 @@ caller acts on.
 - Executed: npm test -- test/mark-done.test.js
 - Result:   3 passed, 0 failed, 0 skipped
 - Checks:   type-check clean · lint clean     (gate runs only)
+- Visual:   2.1c matched queue.html at 375px and 1280px   (when in scope)
 - Action:   Task 2.1 and its scenarios may be marked [x].
 ```
 
@@ -90,3 +91,6 @@ Two rules about the wording:
 
 If the project has no type-checker or linter, write that rather than omitting the `Checks` line. An
 absent line reads as a check that passed.
+
+The same goes for `Visual`. A visual scenario that couldn't be rendered is reported as `not checked —
+no browser available`, and the `Action` line says it can't be marked `[x]` — what the caller does with it is the caller's call.

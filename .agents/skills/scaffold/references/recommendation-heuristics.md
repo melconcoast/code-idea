@@ -2,7 +2,7 @@
 
 Starting points for the "recommend, then let the user confirm or override" pattern used in Step 2. These are heuristics to reason from, not a lookup table to apply blindly — always ground the actual recommendation in the specific project's data shape, scale, and domain, and prefer a web-search tool (if available) to confirm a specific technology/version recommendation is still current before offering it as the default, since this space moves fast and this file will age.
 
-If a more specialized skill for a sub-domain is available (e.g. a frontend/UI design skill with its own guidance), prefer that over the heuristics below — this file is the fallback for when nothing more specific exists.
+If a more specialized skill for a sub-domain is available, prefer its guidance over the heuristics below — this file is the fallback for when nothing more specific exists.
 
 ## Tech stack
 - Don't recommend a stack in the abstract — recommend it against what the project actually needs to do. A real-time job queue, a content site, and a data pipeline warrant different stacks even if they're all "a web app."
@@ -22,19 +22,11 @@ If a more specialized skill for a sub-domain is available (e.g. a frontend/UI de
 ## File/blob storage
 - Anything larger than a database row (uploads, generated documents, images) → object storage (S3-compatible), not the database. If there's a privacy/ephemerality requirement (files that must not persist), pair this with an explicit lifecycle/TTL policy and application-level delete-on-completion, not just "we'll clean it up later."
 
-## UI design — typography
-- Pair one distinctive display/heading face with one neutral, highly-legible body face — not the same font for both, and not two competing display faces.
-- Ground the typographic personality in the product's actual domain and audience rather than defaulting to whatever's currently generic-trendy. A tool for tradespeople reads differently than a consumer social app; let that inform weight, size, and warmth.
-- Numeric/tabular data (prices, IDs, timestamps, codes) reads better in a monospace or tabular-figure font — small detail, disproportionately noticeable when missing.
-
-## UI design — color and theme
-- Avoid defaulting to a generic AI-assistant palette (the muted cream/beige/terracotta combination shows up constantly when a model isn't given a reason to choose otherwise). Instead, derive the palette from something concrete about the product's domain — a material, a process, a cultural reference genuinely tied to what the product does — the same way an ink/CMYK-inspired palette fits a printing product specifically.
-- Reserve accent colors for meaning, not decoration — e.g. one color consistently means "premium/upgrade," another consistently means "warning," rather than colors being interchangeable across the UI.
-
-## UI design — patterns and layout
-- Match component density and layout gravity to who's actually using that screen and on what device — a screen used by a business owner at a desk tolerates (and benefits from) more density than a screen used by a customer on a phone in a hurry.
-- Reuse the same interaction pattern for the same kind of decision throughout the product (e.g. one consistent way of presenting a small set of mutually exclusive choices) rather than inventing a new pattern per screen.
-- State explicitly which icon set / component library is standardized on, once decided — prevents an agent (or a future contributor) from mixing icon libraries or component styles across screens later.
+## UI design
+Not this file's job any more. How a product looks — typography, palette, layout, density — is settled
+by `design-ui` after the scaffold, against mockups the user has seen; its
+`references/visual-direction.md` holds the guidance that used to live here. This skill still
+recommends the UI *framework* and component approach under Tech stack, because that's a stack choice.
 
 ## Naming conventions
 

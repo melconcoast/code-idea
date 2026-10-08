@@ -3,7 +3,7 @@ name: test-and-verify
 description: Use this skill whenever tests are to be run or a failure chased down — "run the tests", "run the test suite", "verify this", "check the tests pass", "fix the failing tests", "why is this test failing", or when `execute-plan` needs a task or a `Task X.V` gate verified. Use it even when the request looks like a one-liner — the bounded loop and the honest verdict are the point, not the command. Not for writing a feature or its tests from a plan — use execute-plan. Not for standing up a project's first test runner — use execute-plan. Runs a project's tests, reads the real output rather than the exit code, and fixes what fails — a bounded diagnose-fix-rerun loop that stops after three remediation attempts instead of guessing on, and never weakens a test to reach green. Targets the suite relevant to the work, and adds the type-checker and linter at a phase gate. Reports a plain pass or fail verdict with the exact command it ran, and never edits a plan file — the caller marks the boxes.
 license: MIT
 metadata:
-  version: "4.2.1"
+  version: "5.0.0"
 ---
 
 # test-and-verify
@@ -21,6 +21,7 @@ Runs the tests, reads what actually happened, and fixes what's broken — within
 - **Fix only what the failure names.** Not the code around it, not a style you'd have written differently, not a passing test you find unconvincing. Unrelated findings get reported, never fixed in passing.
 - **The failure decides what to fix — application code or the test.** These are different bugs, and picking wrong makes both worse. Say which one you concluded and why before you change anything.
 - **Never edit a plan file.** Not a glyph, not a count, not the Progress Log. This skill produces a verdict; `execute-plan` writes it down. Two writers on one file is how a plan stops being trustworthy.
+- **A screen nobody looked at isn't verified.** Visual scenarios pass only on a rendered comparison with their mockup, never on reading markup — and with no way to render, the honest verdict is *not checked*, never a pass.
 - **Never weaken a test to make it pass.** Deleting an assertion, loosening a matcher, adding a skip, or narrowing the run until the failure is out of scope is not a fix — it's hiding the bug and reporting green.
 
 ## Workflow
@@ -29,6 +30,7 @@ Runs the tests, reads what actually happened, and fixes what's broken — within
 - If the caller supplied a command, use it. Otherwise discover it — see `references/test-commands.md`.
 - **Default to the tests relevant to the work at hand**, not the whole suite. A targeted run is faster and its output is readable.
 - **A `Task X.V` phase gate is the exception**: run the whole module's suite, plus the project's type-checker and linter if it has them. The gate exists to catch what this phase broke somewhere else, and a targeted run cannot see that.
+- **Visual scenarios add a visual check** — whenever the caller names any, and at the gate of a phase that built a screen. Render each screen at the reference widths and compare it with its mockup; see `references/visual-check.md`. It's part of the same verdict, not a separate one.
 - If no runner exists at all, say so and hand back. Setting one up is a project decision that belongs to `execute-plan`, not a remediation step.
 
 ### Step 2 — Run it and read the output
@@ -45,9 +47,11 @@ Runs the tests, reads what actually happened, and fixes what's broken — within
 ### Step 4 — Report the verdict
 - State plainly: passed or failed, the exact command run, the counts, and what the caller may now do.
 - On a gate run, report the type-check and lint results too, and say explicitly if the project has neither rather than implying they passed.
+- When visual scenarios were in scope, report each one — matched, mismatched with what differs, or not checked and why.
 - On failure, never imply partial success. A caller that reads "mostly passing" as green is the failure mode this whole skill exists to prevent.
 - Report anything you noticed but deliberately did not fix. See `references/remediation.md` for both report shapes.
 
 ## Reference files
 - `references/test-commands.md` — where to find the right command per ecosystem, targeted versus full-suite invocation, and the type-check and lint commands a gate adds. Read this in Step 1 when no command was supplied.
+- `references/visual-check.md` — rendering a screen, comparing it with its mockup, and what to do when there's no browser. Read this in Step 1 whenever visual scenarios are in scope.
 - `references/remediation.md` — telling an application bug from a test bug, what a targeted fix looks like, the circuit breaker, and the exact pass and fail report formats. Read this before the first fix in Step 3.

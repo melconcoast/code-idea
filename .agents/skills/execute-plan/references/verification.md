@@ -59,6 +59,20 @@ leaves two-thirds of the scenario unchecked, and the scenario's checkbox would b
 Name the tests after the behavior, not the function under test. The scenario is the specification the
 next reader compares against.
 
+## Visual scenarios
+
+A visual scenario says what a screen must look like against its mockup. It closes only on a visual
+check `test-and-verify` actually ran — the built screen rendered at the scenario's width and compared
+with the reference — never on reading the markup, and never because the data tests passed. An
+unstyled list that shows the right orders passes every data test and fails the screen.
+
+- A mismatch the verdict names is a failing scenario, handled like any other failure.
+- No browser in this environment means the visual part can't be checked here. Verify what can be —
+  the states render, the tokens are the ones `DESIGN.md` names — and mark the scenario `[~]` with what
+  would verify it. Never `[x]` on faith.
+- If the code is right and the mockup is what's wrong, stop and confirm, as below. The mockup is the
+  spec; changing it is `design-ui`'s job and the user's call.
+
 ## When a scenario is wrong
 
 Sometimes the code is right and the scenario is mistaken — it contradicts the project's own rules,

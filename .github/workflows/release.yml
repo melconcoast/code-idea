@@ -176,11 +176,11 @@ jobs:
           # A move or a bad glob that drops a skill should fail the release, not ship
           # a plugin quietly missing one.
           count=$(ls -d .agents/skills/*/ 2>/dev/null | wc -l | tr -d ' ')
-          if [ "$count" != "4" ]; then
-            echo "::error::expected 4 skills, found $count - update this check deliberately if a skill was added or removed"
+          if [ "$count" != "5" ]; then
+            echo "::error::expected 5 skills, found $count - update this check deliberately if a skill was added or removed"
             exit 1
           fi
-          echo "all 4 skills validated"
+          echo "all 5 skills validated"
 
       - name: Parse every skill's frontmatter with a strict YAML parser
         run: |

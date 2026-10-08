@@ -63,8 +63,10 @@ See `docs/architecture.md` for the full system design.
 - `docs/decisions.md` — why non-obvious choices were made
 - `docs/development-roadmap.md` — the module/sub-module breakdown, dependency order, and what's deliberately deferred
 - `docs/product.md` — current business/feature rules
-- [`docs/design-system.md` — if applicable]
 ```
+
+> No `DESIGN.md` line here. `design-ui` adds it when it writes the file, so a fresh scaffold never
+> links a doc that doesn't exist yet. On a re-run, keep the line it added.
 
 ---
 
@@ -318,31 +320,12 @@ are different facts.
 
 ---
 
-## docs/design-system.md (only if a UI subsystem exists)
+## Design files — not this skill's
 
-```markdown
-# Design system — [subsystem name]
-
-*Every token needs its semantic meaning — what it's reserved for, not just its value. Don't add one without saying when to use it.*
-
-## Color
-- [Token/class]: [semantic meaning — what it's reserved for, not just what it looks like]
-
-## Typography
-- [Scale/weight]: [when to use it]
-
-## Components
-- [Component pattern name]: [where it's used, any variant rules]
-
-## Layout
-- [Any layout rules that differ meaningfully across screens/breakpoints]
-
-## Voice / copy conventions
-- [Language, tone, terminology specific to this product's domain]
-
-## Accessibility baseline
-- [Minimum touch target, contrast, etc. — only if actually decided]
-```
+`DESIGN.md`, `docs/design/screens.md`, and the mockups under `docs/design/mockups/` are written by
+`design-ui`, after this skill runs, against mockups the user has actually seen. Their formats live in
+that skill's `references/design-files.md`. Before 5.0 this skill wrote a `docs/design-system.md`; on a
+re-run, leave it in place and name it in the hand-off — migrating it is `design-ui`'s job.
 
 ---
 

@@ -47,6 +47,24 @@ Where a rule is stated as a prohibition, the scenario is the prohibition:
 > *Scenario 2.1b:* A request moving a task directly from `todo` to `done` is rejected and the task
 > stays `todo`.
 
+## Screens get visual scenarios
+
+A task that builds or changes a screen gets at least one scenario about what the screen looks like and
+shows — otherwise the only thing verified is that the data arrived, and an unstyled list passes. The
+reference is the screen's mockup and its entry in `docs/design/screens.md`; name them, and say what
+must match.
+
+| Weak | Strong |
+|---|---|
+| Looks good | At 375px, the queue matches `docs/design/mockups/queue.html`: one order per row, pickup time the largest text in the row, the overdue badge in the accent color, no horizontal scroll |
+| Matches the design | At 1280px, the queue uses the mockup's two-column layout, with the order detail beside the list rather than below it |
+| Handles empty state | With no open orders, the queue shows the mockup's empty state — the message and the single "Take an order" action — not an empty list |
+
+Write visual scenarios the same way as any other: a starting condition, a width or state, and what is
+observably on screen. Cover the states `screens.md` lists that this task introduces — the empty and
+error states are where builds most often fall back to the default. Never name a screenshot tool or a
+diffing library; `test-and-verify` decides how the comparison runs.
+
 ## Never write test code
 
 Scenarios are plain English. No assertions, no framework names, no fixture setup, no `expect(...)`,

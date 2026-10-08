@@ -3,7 +3,7 @@ name: plan-module
 description: Use this skill when the user says things like "plan the next module", "plan module 3", "break this module into phases", "create the execution plan for [module]", or is ready to start building a module the roadmap already defines. Not for creating the roadmap or a project's agent docs — use scaffold. Not for building a module that already has a plan file — use execute-plan. Turns one module of an existing development roadmap into a phase-based execution spec an automated coding agent can build from — `docs/guides/feature_[module]_plan.md`, with 2–4 dependency-ordered phases, at most 3–4 tasks each, plain-English test scenarios under every task, and a mandatory verification gate closing each phase. Reads scope, sub-modules, and dependency order out of `docs/development-roadmap.md` rather than inventing them, and confirms the phase cut before writing.
 license: MIT
 metadata:
-  version: "4.2.1"
+  version: "5.0.0"
 ---
 
 # plan-module
@@ -36,6 +36,7 @@ Turns one module of the development roadmap into the phase-based execution spec 
 - Read the root context file (`CLAUDE.md` / `AGENTS.md`) and whichever of `docs/product.md`, `docs/conventions.md`, `docs/architecture.md` it links. Business rules and conventions constrain the tasks; a plan that ignores them tells the coding agent to violate the project's own docs.
 - Check `docs/decisions.md` for `Status: Pending` entries this module touches, and name each one before planning. A task depending on a parked decision is a phase boundary, not a task.
 - If a `Depends on:` module is not `done`, say so and ask whether to plan this one anyway or plan the dependency first. Don't assume either.
+- **If the module has a visible surface, read `DESIGN.md` and each of its screens' entries in `docs/design/screens.md`.** A screen with no entry and mockup, or no `DESIGN.md` at all, stops planning: hand off to `design-ui`. Planning UI against nothing is how the build ends up looking like every other app. The one exception is a look parked as `Status: Pending` — then plan up to that boundary, like any other parked decision.
 
 ### Step 2 — Cut the phases, then confirm the cut
 - Propose 2–4 phases in dependency order, each carrying `Dependencies: None` or `Dependencies: Phase X`.
@@ -50,11 +51,12 @@ Turns one module of the development roadmap into the phase-based execution spec 
 - Write at least one happy-path scenario, plus at least one edge or error scenario wherever the task can fail. A task carrying only a happy path is under-specified.
 - Scenarios state observable behavior: given what, what happens, with what result. No test code, no assertions, no framework names.
 - Close every phase with its gate task, `Task X.V: Run test-and-verify suite for Phase X`. It is mandatory and it is not a development task.
+- A task that builds or changes a screen names the screen and its mockup path in *Details*, and carries at least one **visual scenario** — what the screen must look like and show, checkable against the mockup. See `references/scenario-writing.md`.
 - Use the project's own domain vocabulary, pulled from its docs, rather than generic placeholders.
 
 ### Step 4 — Write the file and link it back
 - Write `docs/guides/feature_<module_name>_plan.md`, snake_case, derived from the module title (`Module 3 — Assignment` → `docs/guides/feature_assignment_plan.md`). Create `docs/guides/` if it doesn't exist.
-- **If that file already exists, this is a re-plan, not a fresh write.** Preserve every `[x]`, `[~]`, and `[-]` item with its annotation, and preserve the Progress Log and Files Modified list whole. Show the user the diff before writing. A task being re-cut becomes `[~]` with its reason — it never reverts to `[ ]`, because that would silently un-do finished work.
+- **If that file already exists, this is a re-plan, not a fresh write.** Preserve every `[x]`, `[~]`, and `[-]` item with its annotation, and preserve the Progress Log and Files Modified list whole. Show the user the diff before writing. A task being re-cut becomes `[~]` with its reason — it never reverts to `[ ]`, because that would silently un-do finished work. A re-plan for a new or changed design reference adds visual scenarios to **open** tasks only; a closed screen that no longer matches becomes a new task, never a reopened one.
 - Update the roadmap in the same pass: each planned sub-module's `**Tasks:** not yet planned` becomes `**Tasks:** see docs/guides/feature_<module>_plan.md — Phase <n>`. The roadmap stays an index of modules and sub-modules; task detail lives only in the plan file.
 - Append a dated Progress Log line saying the plan was initialized or re-cut, and what changed.
 - Report the phase count, the total task count, any decisions still parked and which phases they gate, and the exact path written. Then offer to hand off to `execute-plan`.

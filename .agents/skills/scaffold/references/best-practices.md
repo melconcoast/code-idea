@@ -103,13 +103,20 @@ It also has to survive the no-placeholder rule, which would otherwise suppress i
 whether the text asserts anything. `[Project name]` asserts nothing. "Undecided as of 2026-08-12, use
 default components, ask before adding tokens" asserts a current fact and prescribes behavior.
 
-The doc that would have held the decision is not generated at all. A `design-system.md` whose main
+The doc that would have held the decision is not generated at all. A `DESIGN.md` whose main
 content is a hole is worse than its absence — absence prompts a question, a hollow doc looks answered.
 
 ## Prototype constraints are not production decisions
 A choice made to get a demo working inside a constrained environment — an artifact sandbox that only permits a fixed set of libraries, a chat surface with no filesystem, a hosted preview with no backend — was made by the environment, not by the user. It carries no signal about what the production system should use, and it should never be silently promoted into a decisions log, design system, or stack section as though it were settled. The failure mode is subtle because the choice genuinely appears in the conversation history and genuinely went unobjected-to; that reads as consensus when it was really just nobody's decision to make at the time. Surface where the choice came from, say plainly that the sandbox forced it, and re-recommend on the merits.
 
 The general principle: absence of objection is not confirmation. Assistant proposals and prototype artifacts stay open questions until the user answers one.
+
+A prototype carries two separate signals, and only one of them is suspect. Its **stack** — the
+libraries the sandbox allowed — says nothing about production. Its **look** is often the best
+evidence there is of what the user actually wants, and dropping it is the opposite failure: the
+coding agent then builds from its own generic defaults, and the product looks worse than the demo
+did. So the stack is re-recommended here, and the look is imported by `design-ui` as a visual
+reference — each confirmed on its own, neither allowed to settle the other.
 
 ## A doc on disk is not a confirmation
 

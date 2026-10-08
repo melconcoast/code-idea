@@ -2,11 +2,11 @@
 
 *"Code this idea"* — take a plan or idea from conversation to a state a coding agent can actually build from correctly.
 
-Four [Agent Skills](https://agentskills.io) — a Claude Code **plugin**, and installable on Codex, Cursor, Gemini CLI, Copilot, Kimi Code and Deep Code too. Three run in sequence — **`scaffold`** turns a plan into the docs a coding agent needs, **`plan-module`** turns one module of the roadmap it produces into a phase-based execution spec, and **`execute-plan`** builds that spec task by task — with a fourth, **`test-and-verify`**, doing the running and fixing of tests on their behalf.
+Five [Agent Skills](https://agentskills.io) — a Claude Code **plugin**, and installable on Codex, Cursor, Gemini CLI, Copilot, Kimi Code and Deep Code too. Four run in sequence — **`scaffold`** turns a plan into the docs a coding agent needs, **`design-ui`** settles how the product looks before anything is built (projects with a UI only), **`plan-module`** turns one module of the roadmap it produces into a phase-based execution spec, and **`execute-plan`** builds that spec task by task — with a fifth, **`test-and-verify`**, doing the running and fixing of tests on their behalf.
 
-`scaffold` turns a project plan, idea, or planning conversation into a complete, AI-coding-agent-ready documentation set — a lean root context file in whichever format your target agent reads natively (`CLAUDE.md` for Claude Code, `AGENTS.md` for Codex or Antigravity, or both for mixed/generic targets), plus linked docs (architecture, decisions, conventions, development roadmap, product, design-system), and, for monorepos, nested per-subsystem context files.
+`scaffold` turns a project plan, idea, or planning conversation into a complete, AI-coding-agent-ready documentation set — a lean root context file in whichever format your target agent reads natively (`CLAUDE.md` for Claude Code, `AGENTS.md` for Codex or Antigravity, or both for mixed/generic targets), plus linked docs (architecture, decisions, conventions, development roadmap, product), and, for monorepos, nested per-subsystem context files.
 
-It doesn't apply one fixed template. It interviews you (or reads the plan straight out of your conversation) to figure out what your specific project actually needs, proposes grounded recommendations for anything you don't have a strong opinion on — tech stack, database/caching choice, UI theme and typography — and lets you confirm or override each one.
+It doesn't apply one fixed template. It interviews you (or reads the plan straight out of your conversation) to figure out what your specific project actually needs, proposes grounded recommendations for anything you don't have a strong opinion on — tech stack, database/caching choice, UI framework — and lets you confirm or override each one.
 
 ## Why
 
@@ -32,7 +32,7 @@ The **content** is identical regardless of layout — only what a given project 
 | `docs/conventions.md` | Naming/structural rules beyond what a linter enforces |
 | `docs/development-roadmap.md` | **Always** — modules and sub-modules, in dependency order, with scope boundaries |
 | `docs/product.md` | Business/feature rules an agent needs to implement correctly |
-| `docs/design-system.md` | There's a UI subsystem with real design conventions |
+| `DESIGN.md`, `docs/design/` | Never by `scaffold` — `design-ui` writes them next, when there's a UI |
 | Nested `<subsystem>/AGENTS.md` or `<subsystem>/CLAUDE.md` | Genuine monorepo, subsystems with materially different conventions — matches the root layout |
 
 ## scaffold — how it works
@@ -55,7 +55,39 @@ The **content** is identical regardless of layout — only what a given project 
 - **Stale docs are worse than no docs** — architecture docs must be updated alongside real changes, or removed.
 - **Recurring procedures become Skills**, not static docs.
 
-See [`references/best-practices.md`](.agents/skills/scaffold/references/best-practices.md) for the full reasoning, [`references/recommendation-heuristics.md`](.agents/skills/scaffold/references/recommendation-heuristics.md) for the stack/database/UI defaults it draws on, and [`references/agent-profiles.md`](.agents/skills/scaffold/references/agent-profiles.md) for the sourced per-agent facts behind the container table above.
+See [`references/best-practices.md`](.agents/skills/scaffold/references/best-practices.md) for the full reasoning, [`references/recommendation-heuristics.md`](.agents/skills/scaffold/references/recommendation-heuristics.md) for the stack/database defaults it draws on, and [`references/agent-profiles.md`](.agents/skills/scaffold/references/agent-profiles.md) for the sourced per-agent facts behind the container table above.
+
+## design-ui — the look, settled before it's built
+
+A prototype made in a chat surface usually looks far better than the same idea built by a coding
+agent. It isn't a capability gap: a chat artifact surface loads design guidance on every request,
+while a coding agent's defaults point the other way — match the surrounding code, take the smallest
+diff, stop when the tests pass. With no reference, the agent builds the average of what it has seen.
+Anthropic and OpenAI give the same fix: decide the direction first, and give the agent something to
+check its work against.
+
+`design-ui` runs after `scaffold` on any project with a UI, before the first screen is planned:
+
+- **Finds the reference.** Imports what you already have — a chat artifact's code, a design tool's
+  handoff bundle, a design file through a connector, screenshots, or the UI already built. With
+  nothing to import, it writes a one-line visual thesis and proposes two or three genuinely distinct
+  directions as mockups of the same screen.
+- **Confirms the look separately from the stack.** A prototype's libraries were often forced by its
+  sandbox, and `scaffold` re-recommends those. Its look is often exactly what you want, and becomes
+  the target.
+- **Writes it into the repo.** `DESIGN.md` — tokens plus the reasons behind them, in
+  [Google Labs' open format](https://github.com/google-labs-code/design.md) — a screen inventory in
+  `docs/design/screens.md` covering empty, loading, and error states, and one static HTML mockup per
+  key screen. Previews are shown however your agent can show them; the files are the source of truth.
+
+Downstream, `plan-module` refuses to plan a screen with no reference and gives every screen task a
+plain-English visual scenario; `execute-plan` reads the mockup before writing the screen; and
+`test-and-verify` renders it at phone and desktop widths and compares. With no browser available, a
+visual scenario is reported *not checked* — never passed on faith.
+
+An existing project upgrades in place: run `design-ui`, and it migrates a pre-5.0
+`docs/design-system.md` into `DESIGN.md` — confirming every value rather than carrying it over — then
+a re-plan adds visual scenarios to open tasks without reopening anything already closed.
 
 ## plan-module — from roadmap to execution spec
 
@@ -148,7 +180,7 @@ reads as a pass.
 
 ## Installation
 
-These four skills follow the [Agent Skills](https://agentskills.io) open standard, so they run on
+These five skills follow the [Agent Skills](https://agentskills.io) open standard, so they run on
 any agent that reads `SKILL.md` — not just Claude Code. Pick whichever line matches your setup.
 
 **Claude Code** — install as a plugin, so `/plugin` keeps it updated:
@@ -158,7 +190,7 @@ any agent that reads `SKILL.md` — not just Claude Code. Pick whichever line ma
 /plugin install code-idea@melconcoast
 ```
 
-Skills are then invoked as `/code-idea:scaffold`, `/code-idea:plan-module`, `/code-idea:execute-plan`, and `/code-idea:test-and-verify`, or triggered naturally by what you ask for.
+Skills are then invoked as `/code-idea:scaffold`, `/code-idea:design-ui`, `/code-idea:plan-module`, `/code-idea:execute-plan`, and `/code-idea:test-and-verify`, or triggered naturally by what you ask for.
 
 **Codex, Cursor, Gemini CLI, GitHub Copilot, Kimi Code, Deep Code** — either the
 [skills CLI](https://www.skills.sh):
@@ -175,11 +207,11 @@ git clone https://github.com/melconcoast/code-idea
 ./code-idea/scripts/install.sh            # --global, --agent NAME, --all, --dry-run, --list
 ```
 
-**Any other SKILL.md-aware agent** — copy the four folders from `.agents/skills/` into whichever
+**Any other SKILL.md-aware agent** — copy the skill folders from `.agents/skills/` into whichever
 directory your agent reads. Most honour the shared `.agents/skills/` convention, so
 `cp -R code-idea/.agents/skills/* your-project/.agents/skills/` is usually the whole job.
 
-**Claude.ai / Claude Desktop** — download the `scaffold.skill`, `plan-module.skill`, `execute-plan.skill`, and `test-and-verify.skill` assets from a [release](https://github.com/melconcoast/code-idea/releases) and add them as skills.
+**Claude.ai / Claude Desktop** — download the `scaffold.skill`, `design-ui.skill`, `plan-module.skill`, `execute-plan.skill`, and `test-and-verify.skill` assets from a [release](https://github.com/melconcoast/code-idea/releases) and add them as skills.
 
 **From source, for Claude Code** — no build step. Point a local marketplace at your clone: `/plugin marketplace add /path/to/code-idea`.
 
@@ -190,7 +222,7 @@ directory your agent reads. Most honour the shared `.agents/skills/` convention,
 
 ## Usage
 
-Once installed, just ask naturally — "let's get this ready for Claude Code," "scaffold AGENTS.md for this project," "turn this plan into context files." Once the roadmap exists and you're ready to build, "plan the next module" or "plan module 3" hands off to `plan-module`; once a plan file exists, "execute the plan" or "build task 2.1" hands off to `execute-plan`, which calls `test-and-verify` to prove each task before closing it. See [`examples/`](examples/) for a sample of what the output looks like for a small multi-subsystem project.
+Once installed, just ask naturally — "let's get this ready for Claude Code," "scaffold AGENTS.md for this project," "turn this plan into context files." If the project has a UI, "design the UI" or "import my prototype" hands off to `design-ui` next. Once the roadmap exists and you're ready to build, "plan the next module" or "plan module 3" hands off to `plan-module`; once a plan file exists, "execute the plan" or "build task 2.1" hands off to `execute-plan`, which calls `test-and-verify` to prove each task before closing it. See [`examples/`](examples/) for a sample of what the output looks like for a small multi-subsystem project.
 
 ## Repository structure
 
@@ -204,9 +236,14 @@ Once installed, just ask naturally — "let's get this ready for Claude Code," "
 │   │   ├── SKILL.md                      # plan -> agent docs set
 │   │   └── references/
 │   │       ├── best-practices.md         # research/reasoning behind the rules
-│   │       ├── recommendation-heuristics.md  # stack/DB/UI defaults, with sources
+│   │       ├── recommendation-heuristics.md  # stack/DB/naming defaults, with sources
 │   │       ├── agent-profiles.md         # what each target agent reads and how, with sources
 │   │       └── templates.md              # skeleton for each doc type
+│   ├── design-ui/
+│   │   ├── SKILL.md                      # the look, settled in DESIGN.md + mockups before building
+│   │   └── references/
+│   │       ├── visual-direction.md       # escaping generic defaults, importing a prototype
+│   │       └── design-files.md           # DESIGN.md, screens.md, and mockup formats
 │   ├── plan-module/
 │   │   ├── SKILL.md                      # one roadmap module -> phase-based execution spec
 │   │   └── references/
@@ -221,6 +258,7 @@ Once installed, just ask naturally — "let's get this ready for Claude Code," "
 │       ├── SKILL.md                      # run the suite, fix what fails, report a verdict
 │       └── references/
 │           ├── test-commands.md          # finding/scoping the command, with sources
+│           ├── visual-check.md           # rendering a screen and comparing it with its mockup
 │           └── remediation.md            # app-bug vs test-bug, circuit breaker, report formats
 ├── scripts/
 │   └── install.sh                        # install into any supported agent, no plugin system needed
@@ -234,7 +272,7 @@ Once installed, just ask naturally — "let's get this ready for Claude Code," "
 └── LICENSE
 ```
 
-All four skills ship. `scaffold` writes the docs set, `plan-module` cuts a module into a plan file,
+All five skills ship. `scaffold` writes the docs set, `design-ui` settles the look, `plan-module` cuts a module into a plan file,
 `execute-plan` builds it, and `test-and-verify` proves each piece before a box gets checked.
 
 ## Contributing

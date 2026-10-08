@@ -19,8 +19,8 @@ clearly shouldn't. The "must NOT" rows exist for that reason — they're not fil
 
 ## Fixture C — already scaffolded
 
-Fixture A, run a second time against a repo that already contains `AGENTS.md`, `CLAUDE.md`, and
-`docs/design-system.md` asserting a slate/shadcn theme that the user never confirmed.
+Fixture A, run a second time against a repo that already contains `AGENTS.md`, `CLAUDE.md`, and a
+pre-5.0 `docs/design-system.md` asserting a slate/shadcn theme that the user never confirmed.
 
 ## Fixture D — a plan containing secrets
 
@@ -84,15 +84,29 @@ the pickup date", so an order whose pickup date is *today* is refused. One test 
 
 ---
 
+## Fixture J — a project with a prototype it liked
+
+Fixture A, where the planning conversation also produced a chat-artifact prototype of the staff queue:
+React, Tailwind, and a component library — the libraries that artifact surface allows — with a warm
+paper-and-ink look, large pickup times, and an accent reserved for overdue orders. The user said "I
+love how this looks". Nobody ever discussed the production stack. The prototype shows only the
+happy path, with five tidy orders.
+
+## Fixture K — scaffolded before 5.0, plan in flight
+
+Fixture F, whose repo also holds a pre-5.0 `docs/design-system.md` (slate palette, shadcn components,
+never confirmed), a built queue screen styled from it, and no `DESIGN.md` or `docs/design/`. Phase 1
+of the plan — which built the queue screen — is `[x]`; Phase 2 has open UI tasks.
+
 ## Scenarios
 
 | ID | Setup | Must produce | Must NOT produce |
 |---|---|---|---|
 | S1 | Fixture C | Step 0 announces the existing scaffold before any question | Silent regeneration |
-| S2 | Fixture C | The theme in `design-system.md` is re-asked, offered as the current value | Treating it as settled |
+| S2 | Fixture C | `design-system.md` named in Step 0 and left in place, and the Step 5 hand-off sending its migration to `design-ui` | Treating its theme as settled; `scaffold` migrating, rewriting, or deleting it itself |
 | S3 | Fixture C | Target-agent question re-asked despite `CLAUDE.md` existing | Inferring the agent from the file layout |
 | S4 | Fixture A | No re-run language anywhere | A Step 0 announcement on a fresh scaffold |
-| S5 | Fixture A, user defers the theme | Pending block at top of the content file; `Status: Pending` entry in `decisions.md`; listed in Step 5 summary | Any `design-system.md` |
+| S5 | Fixture A, user parks the look | Pending block at top of the content file; `Status: Pending` entry in `decisions.md`; listed in Step 5 summary | Any `DESIGN.md` or `docs/design/`; a hand-off to `design-ui` as though the look were ready to settle |
 | S6 | Fixture A, user answers everything | No pending section at all | An empty "Pending decisions" heading |
 | S7 | Fixture C with a pending decision on file | It is surfaced first, with an option to keep it parked | Re-asking it as if new |
 | S8 | Fixture A, target = Claude Code alone | Content in root `CLAUDE.md`; auto-memory promotion line | Any `AGENTS.md` |
@@ -170,7 +184,7 @@ scenario depends on.
 
 | ID | Setup | Must produce | Must NOT produce |
 |---|---|---|---|
-| S30 | Fixture A, theme deferred | Every `## Related docs` link resolves to a generated file | A link to `docs/design-system.md`, which was deliberately not generated |
+| S30 | Fixture A, fresh scaffold | Every `## Related docs` link resolves to a generated file | A link to `DESIGN.md`, which `design-ui` writes later and links itself |
 | S31 | Fixture B, target = Codex | Step 5 reports the combined root-plus-nested size against the 32 KiB cap | Reporting only the root file's size |
 | S32 | Fixture B, target = Claude Code + Codex | Size reported against each agent's own limit, in its own unit (lines, then bytes) | Collapsing the two into a single "stricter" number |
 
@@ -284,6 +298,41 @@ compete for the same requests, so a change to one can silently capture another's
 | S95 | "run the tests" / "verify this" / "check the tests pass" / "fix the failing tests" | `test-and-verify` fires on each | `execute-plan` firing and building a task instead |
 | S96 | S28's four `scaffold` phrases, S56's four `plan-module` phrases, and S65's four `execute-plan` phrases, re-run after `test-and-verify` shipped | All twelve still fire the skill they always did | Any of them captured by `test-and-verify`'s description |
 
+## design-ui — reference, confirmation, and ownership scenarios
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S107 | Fixture J, `design-ui` | The prototype saved under `docs/design/reference/` and its look confirmed as the visual target, with the sandbox-forced libraries named and left to `scaffold` | The look discarded because the stack was sandbox-forced; the prototype's libraries written into `docs/decisions.md` as settled |
+| S108 | Fixture J, `scaffold` | The stack re-recommended on its merits, no design files written, and a Step 5 hand-off to `design-ui` that names the prototype as the reference to import | `scaffold` writing `DESIGN.md` or `design-system.md`; the prototype never mentioned again after the stack question |
+| S109 | Fixture A, look undecided, `design-ui` | A one-sentence visual thesis grounded in the bakery, then two or three genuinely distinct directions as mockups of the same screen, one recommended | A single direction presented as the answer; three variants of one layout; the stock defaults (Inter, purple-on-white, a three-card grid) unexamined |
+| S110 | Fixture J, `design-ui` in an environment that can render or publish an HTML page | Each mockup written under `docs/design/mockups/` *and* previewed, with its repo path named — the preview copy inlining the tokens, the repo file keeping its link | A mockup that exists only as a rendered artifact or published page; a host tool named in `SKILL.md` |
+| S111 | Fixture I, `design-ui` — `docs/conventions.md` forbids CSS frameworks and new colors | `DESIGN.md` naming and explaining the existing `--ink`, `--paper`, `--accent`; mockups linking `public/styles.css` by relative path and opening from disk; any conflict raised as a question | A new palette; a CSS framework in a mockup; a color value copied into a mockup; a convention quietly designed past |
+| S112 | Any `design-ui` run, then a `scaffold` re-run | Changes confined to `DESIGN.md`, `docs/design/`, one `## Related docs` line, and a pending-decision entry only if the look was parked — and the re-run keeping that line | A roadmap or plan file touched by `design-ui`; the re-run dropping the `DESIGN.md` link |
+| S113 | Fixture K, `design-ui` | A migration named as one, the old theme offered as a recommendation to confirm, a map of what moved where, and a question before `design-system.md` is deleted | The old theme carried over as settled; the old file deleted without asking; content with no new home dropped |
+| S114 | Fixture J, user parks the look during `design-ui` | A dated pending decision in the context file and `decisions.md`, and no `DESIGN.md` | A half-written `DESIGN.md`; the prototype's look adopted by default |
+
+## Visual planning and verification scenarios
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S115 | Fixture E plus a UI, no `DESIGN.md` and no `docs/design/screens.md`, "plan module 2" | A stop and a hand-off to `design-ui`, naming the screens with no reference | UI tasks planned anyway against nothing |
+| S116 | Fixture E after `design-ui`, "plan module 2" | Each screen task naming its screen and mockup path in *Details*, with at least one plain-English visual scenario covering a width or state | "Looks good"; a screenshot or diffing tool named in a scenario; a screen task with data scenarios only |
+| S117 | Fixture I after `design-ui`, executing a screen task, browser available | The screen rendered at the scenario's widths, screenshotted, compared claim by claim, and reported in the verdict's `Visual` line — and only then `[x]` | `[x]` from reading the markup or from data tests alone; a match reported with no screenshot taken |
+| S118 | As S117, no browser available | Each visual scenario reported `not checked` with what would check it, and the scenario recorded `[~]` | `[x]` on faith; a browser installed as part of the verification pass |
+| S119 | As S117, where the mockup contradicts `docs/conventions.md` | A stop and a report — neither the code bent past the convention nor the mockup edited | The mockup changed to match the build; a claim dropped from the comparison to reach a match |
+| S120 | Fixture K before any `design-ui` run, `execute-plan` on a UI task | The task built against the project's conventions, with the missing references noted once | A stop on every UI task; a screen designed inside the loop |
+| S121 | Fixture K after `design-ui`, "re-plan module 2" | Visual scenarios added to open tasks only; the built queue screen's mismatch with the new reference raised as a new task | A closed `[x]` reopened or reverted to `[ ]`; the Progress Log rewritten |
+
+## design-ui — trigger scenarios
+
+Run these after any edit to any skill's frontmatter `description`.
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S122 | "design the UI" / "make mockups" / "import my prototype" / "redesign the queue screen" | `design-ui` fires on each | `scaffold` or `execute-plan` firing instead |
+| S123 | "how do I get good UI out of a coding agent?" — abstract, no project in play | An explanation | Files written; an interview started |
+| S124 | S28's, S56's, S65's, and S95's phrases, re-run after `design-ui` shipped | All sixteen still fire the skill they always did | Any of them captured by `design-ui`'s description |
+
 ## Distribution and cross-agent installation
 
 Run these after any change to where the skills live, to `.claude-plugin/plugin.json`, or to a
@@ -292,8 +341,8 @@ registers can't fail a behavioral test, it just goes quiet.
 
 | ID | Setup | Must produce | Must NOT produce |
 |---|---|---|---|
-| S97 | Any change to `plugin.json`'s `skills` field, or to the skills directory path | All four skills still register in Claude Code as `/code-idea:*`, and the release workflow's manifest step passes | The silent fallback — a typo'd path makes Claude Code scan `./skills/`, find nothing, and load zero skills with no error at all |
+| S97 | Any change to `plugin.json`'s `skills` field, or to the skills directory path | Every skill still registers in Claude Code as `/code-idea:*`, and the release workflow's manifest step passes | The silent fallback — a typo'd path makes Claude Code scan `./skills/`, find nothing, and load zero skills with no error at all |
 | S98 | Any edit to a frontmatter `description` | Trigger phrases sit ahead of the descriptive prose, so Codex's context-budget truncation cuts prose rather than routing | Triggers reachable only in the last third of the field, where truncation removes them first |
-| S99 | Any edit to frontmatter, parsed with a strict YAML parser (`npx skills add . --list` is the quick check) | All four skills discovered and listed | A skill silently skipped for a YAML error Claude Code's lenient parser tolerates — a `: ` in an unquoted `description` is the one that has actually happened |
+| S99 | Any edit to frontmatter, parsed with a strict YAML parser (`npx skills add . --list` is the quick check) | Every skill discovered and listed | A skill silently skipped for a YAML error Claude Code's lenient parser tolerates — a `: ` in an unquoted `description` is the one that has actually happened |
 | S100 | `./scripts/install.sh --all --dry-run` after a skill is added, removed, or renamed | Every skill listed for every agent; agents sharing `.agents/skills/` collapsed to one copy | A skill missing from the install because the script hardcodes names rather than reading the directory |
 | S101 | Installing into a non-Claude agent, then running `execute-plan` against a fixture | Either delegation to `test-and-verify`, or the documented inline fallback under its rules | `execute-plan` stalling because skill-to-skill invocation differs on that agent and it has no fallback |

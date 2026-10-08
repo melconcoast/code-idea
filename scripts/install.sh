@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Install code-idea's four skills into whichever coding agent(s) you use.
+# Install code-idea's five skills into whichever coding agent(s) you use.
 #
 # Every supported agent except Claude Code reads the shared `.agents/skills/`
 # convention, so most targets resolve to the same directory and are copied once.
@@ -56,7 +56,7 @@ AGENTS=(
 
 usage() {
   cat <<EOF
-Install code-idea's skills (scaffold, plan-module, execute-plan, test-and-verify).
+Install code-idea's skills (scaffold, design-ui, plan-module, execute-plan, test-and-verify).
 
 Usage: ./scripts/install.sh [options]
 

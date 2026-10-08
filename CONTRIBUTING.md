@@ -11,18 +11,21 @@ Code and Deep Code all read natively. Claude Code is the one agent that doesn't 
 must always move together, or the plugin loads zero skills without erroring.
 
 Each skill owns a directory under `.agents/skills/`, holding its own
-`SKILL.md` and its own `references/`. Four skills ship. Three run in sequence — `scaffold`,
-`plan-module`, `execute-plan` — and the fourth, `test-and-verify`, is a service the others call rather
-than a stage of its own. No skill name is reserved-but-unbuilt; if you propose a fifth, it gets no
+`SKILL.md` and its own `references/`. Five skills ship. Four run in sequence — `scaffold`,
+`design-ui` (projects with a UI only), `plan-module`, `execute-plan` — and the fifth, `test-and-verify`,
+is a service the others call rather than a stage of its own. No skill name is reserved-but-unbuilt; if you propose a sixth, it gets no
 directory until it is written, because git can't track an empty directory and a stub `SKILL.md`
 registers a broken skill for everyone.
 
 - **`.claude-plugin/plugin.json`** and **`marketplace.json`** — the plugin manifest, and the entry that makes this repo its own marketplace (named `melconcoast`, after the owner, so installs read `code-idea@melconcoast`). The version lives in `plugin.json` only and must match the release tag; CI enforces it.
 - **`.agents/skills/scaffold/SKILL.md`** — the workflow itself: when the skill triggers, how the interview works, how structure is decided, how content gets drafted and written. Changes here affect behavior directly, so keep edits scoped and explain the reasoning in the PR description.
 - **`.agents/skills/scaffold/references/best-practices.md`** — the research and reasoning behind the size limits, ordering rules, and doc-vs-skill split. If you're proposing a change to the skill's rules, the backing reasoning (or a correction to outdated reasoning) belongs here.
-- **`.agents/skills/scaffold/references/recommendation-heuristics.md`** — stack/database/caching/UI defaults the skill proposes during its interview. **This file is expected to age** — tooling and best practices shift. If something here is outdated, that's a welcome PR, not a bug report.
+- **`.agents/skills/scaffold/references/recommendation-heuristics.md`** — stack/database/caching/naming defaults the skill proposes during its interview. **This file is expected to age** — tooling and best practices shift. If something here is outdated, that's a welcome PR, not a bug report.
 - **`.agents/skills/scaffold/references/agent-profiles.md`** — what each coding agent reads and how it loads it. **This file is expected to age**, like the heuristics file, and every claim carries a source URL and verified-on date. A stale entry is a welcome PR. Never add a row you can't cite from that agent's own docs.
 - **`.agents/skills/scaffold/references/templates.md`** — the skeleton structure for each generated doc type. The `docs/development-roadmap.md` section here is the contract `plan-module` reads; a change to that block is a change to both skills.
+- **`.agents/skills/design-ui/SKILL.md`** — how a project's look is found, confirmed, and written into the repo before anything is built. It owns `DESIGN.md` and everything under `docs/design/`; its only write elsewhere is one `## Related docs` line in the context file. It never decides the stack — that's `scaffold`'s.
+- **`.agents/skills/design-ui/references/visual-direction.md`** — escaping the generic default, visual theses, proposing directions, importing a prototype. **Expected to age**: what counts as a generic default shifts. A stale entry is a welcome PR.
+- **`.agents/skills/design-ui/references/design-files.md`** — the `DESIGN.md`, `screens.md`, and mockup formats the other skills read. **Expected to age**: `DESIGN.md` follows an alpha spec, so verify a section name or CLI command against it before relying on one.
 - **`.agents/skills/plan-module/SKILL.md`** — how a roadmap module is located, cut into phases, and written out as a plan file. It reads the roadmap contract rather than restating it, so a scope or vocabulary change belongs in `scaffold`'s `templates.md` first.
 - **`.agents/skills/plan-module/references/plan-template.md`** — the plan file's exact format, its four-state checkbox vocabulary, and how progress is counted. `execute-plan` parses this, so treat the headings and glyphs as a contract, not styling.
 - **`.agents/skills/plan-module/references/scenario-writing.md`** — what makes a plain-English test scenario checkable, with weak/strong pairs. New guidance on scenario quality belongs here, not in the SKILL.md.
@@ -31,6 +34,7 @@ registers a broken skill for everyone.
 - **`.agents/skills/execute-plan/references/progress-updates.md`** — every write execution makes to a plan file or the roadmap. **This file is deliberately subordinate**: the checkbox vocabulary and counting rules are specified in `plan-module`'s `plan-template.md`, and the roadmap `Status` vocabulary in `scaffold`'s `templates.md`. It may say how to apply them and nothing more — if it ever disagrees with either, it's the file that's wrong.
 - **`.agents/skills/test-and-verify/SKILL.md`** — running a suite, reading the output, and the bounded fix loop. It never writes a plan file; that's `execute-plan`'s alone, and a change here that starts editing plan state is a bug, not a feature.
 - **`.agents/skills/test-and-verify/references/test-commands.md`** — where the test command lives per ecosystem, targeted versus whole-suite runs, and the type-check and lint commands a gate adds. **This file is expected to age**, like the heuristics file — a stale runner or flag is a welcome PR, not a bug report.
+- **`.agents/skills/test-and-verify/references/visual-check.md`** — rendering a screen, comparing it with its mockup, and reporting `not checked` when that's impossible. The rules are stable; the tooling notes age.
 - **`.agents/skills/test-and-verify/references/remediation.md`** — telling an application bug from a test bug, what a targeted fix may touch, the three-attempt circuit breaker, and the pass/fail report formats. Guidance on *how to fix* belongs here; guidance on what "done" means belongs in `execute-plan`'s `verification.md`.
 - **`examples/`** — shared across every skill in the plugin, which is why it stays at the repo root rather than moving under `.agents/skills/scaffold/`.
 - **`scripts/install.sh`** — installs the skills into any supported agent without a plugin system. Its `AGENTS` table maps each agent to its project and global skill directories, and **is expected to age** like `agent-profiles.md`: every row cites the agent's own docs and carries a verified-on date. A stale path is a welcome PR. Never add a row you can't cite from that agent's own documentation.

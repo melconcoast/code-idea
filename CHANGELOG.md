@@ -1,5 +1,62 @@
 # Changelog
 
+## [5.0.0] — 2026-10-08
+
+Major release. A fifth skill, `design-ui`, and `scaffold` no longer writes a design doc.
+
+### Why
+A prototype made in a chat surface consistently looked better than the same idea built through this
+plugin. Reading the skills showed why: the prototype's look never reached the repo. `scaffold`
+treated everything a prototype produced as unconfirmed — right for its sandbox-forced stack, wrong
+for its look — and wrote only a token list into `docs/design-system.md`. After that, `plan-module`,
+`execute-plan`, and `test-and-verify` contained no mention of UI, design, or screens at all, so a
+screen task closed as soon as its data tests passed, and an unstyled list passes those. Anthropic and
+OpenAI both describe the same default — an unsteered model builds the generic average — and the same
+fix: settle the direction first, and give the agent a reference to verify against.
+
+### Added
+- **`design-ui`**, run after `scaffold` on projects with a UI. Imports a prototype, handoff bundle,
+  design file, screenshots, or the UI already built — or writes a visual thesis and proposes two or
+  three distinct directions. Confirms the look separately from the stack, one decision at a time.
+  Writes `DESIGN.md` (Google Labs' open format — tokens plus rationale, alpha), `docs/design/screens.md`
+  covering every state, and one static HTML mockup per key screen. Mockups link their tokens by
+  relative path — the project's own stylesheet, or a generated `docs/design/tokens.css` — so they open
+  from disk and never carry a second copy of a color. Mockups are repo files; any
+  rendered preview is capability-detected and never the only copy.
+- **Visual scenarios.** `plan-module` stops and hands off to `design-ui` when a module's screens have
+  no reference, and gives every screen task a plain-English visual scenario naming its mockup.
+- **A visual check in `test-and-verify`** (`references/visual-check.md`). It renders the screen at the
+  scenario's widths, compares it claim by claim with the mockup, and reports a `Visual` line. No
+  browser means `not checked`, never a pass, and `execute-plan` records `[~]`.
+- Scenarios S107–S124 and Fixtures J and K in `examples/test-scenarios.md`.
+
+### Changed
+- **Breaking: `scaffold` no longer writes `docs/design-system.md`.** It asks the UI framework as a stack
+  question and hands the look to `design-ui`. Its UI heuristics moved to `design-ui`'s
+  `references/visual-direction.md`. On a re-run it leaves a legacy `design-system.md` in place and
+  names it in the hand-off; `design-ui` migrates it, confirming every value and asking before deleting
+  the old file.
+- `execute-plan` Step 2 now starts a UI task by reading `DESIGN.md`, the screen's entry, and its
+  mockup — always, since they're in the repo — before any domain-skill consult. A project with no
+  design references builds as before.
+- `test-and-verify`'s report formats gained a `Visual` line.
+
+### Upgrading
+Install 5.0.0 and run `design-ui` on the project. Existing roadmaps and plan files are untouched until
+you re-plan a module, and a re-plan adds visual scenarios to open tasks only — a closed screen that
+doesn't match the new reference becomes a new task, never a reopened one.
+
+### Verification so far
+One smoke run, not an A/B: a fresh agent with no knowledge of this change ran `design-ui` on a copy of
+`examples/fixtures/pickup-queue/`. It kept to the fixture's binding conventions — only the three
+existing custom properties, no CSS framework — wrote a visual thesis and three distinct directions,
+confirmed one choice at a time, and touched nothing outside `DESIGN.md`, `docs/design/`, and one
+`## Related docs` line (S109, S111, S112 behaved as specified). It also surfaced eleven ambiguities,
+the substantive ones fixed before release: binding conventions now outrank the avoid-list, direction
+mockups have a home (`docs/design/directions/`), inapplicable states are listed as such, a design
+choice that needs new plan scope is reported as a re-plan item, and parking the look is an allowed
+write. Every other new scenario is unrun — treat S107–S124 as open, not passing.
+
 ## [4.2.1] — 2026-09-03
 
 ### Fixed

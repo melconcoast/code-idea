@@ -24,4 +24,4 @@ sample-output/
 
 `docs/guides/` is the one directory here that `scaffold` did not create. `plan-module` wrote it when Module 3 was about to be built, and flipped that module's `**Tasks:**` fields in the roadmap to point at it — which is why two sub-modules there read `see docs/guides/…` while Modules 1 and 2 still read `not yet planned`.
 
-Note there's no `docs/architecture.md` or `docs/design-system.md` in this example — the skill didn't generate them because a small single-repo CRUD app didn't have enough architectural complexity or UI-specific design conventions to warrant a dedicated doc. That's the "only what's warranted" behavior working as intended, not an omission.
+Note there's no `docs/architecture.md` in this example — the skill didn't generate it because a small single-repo CRUD app didn't have enough architectural complexity to warrant a dedicated doc. There's no `DESIGN.md` either: `scaffold` never writes one — `design-ui` does, as the next step for a project with a UI. That's the "only what's warranted" behavior working as intended, not an omission.
