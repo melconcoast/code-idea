@@ -88,8 +88,10 @@ for the project's tokens. S110's browser half then passed interactively, once th
 browser: the repo mockup, served from a local static server because the browser tool refuses `file://`,
 loaded its linked stylesheet with no inlined colors, laid out at a confirmed 1280px, and — after the
 window refused to go below 500px, the exact trap the skill warns about — at a confirmed 375px inside a
-fixed-width frame. The repo file was unchanged by the preview. The rendered-artifact preview row was
-not exercised, and stays open.
+fixed-width frame. The repo file was unchanged by the preview. The rendered-artifact row then passed too:
+a preview copy with `public/styles.css` inlined was published as a private artifact, read back with
+the tokens inline and no relative link, while the repo mockup stayed byte-identical and still linked —
+S110 passes in full.
 
 ## [4.2.1] — 2026-09-03
 
