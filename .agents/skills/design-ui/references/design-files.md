@@ -130,3 +130,8 @@ and a desktop width (1280px) as `docs/design/reference/[screen]-375.png` and
 `docs/design/reference/[screen]-1280.png`. `test-and-verify` renders the built screen at the same
 widths and compares. Without a browser, the HTML mockup is the reference and comparison is by reading
 it — say so in the report.
+
+A built page saved as a reference — its rendered HTML, when there's no browser to screenshot it — keeps
+its markup as produced. If its stylesheet link is root-relative (`/styles.css`), it opens unstyled
+from disk; say so in `screens.md` beside it, rather than rewriting the link into something the app
+never served.

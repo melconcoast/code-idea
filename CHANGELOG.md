@@ -75,6 +75,15 @@ unrun. S120 passed: a pre-5.0 project with no design files built its UI task aga
 and noted the missing references once. Also clarified: a route that only serves a screen is not a
 UI task, and a `[~]` *not here* scenario carries a fixed annotation.
 
+A final round covered the rest. The earlier S119 stop re-ran on a fresh copy and passed: the loop
+stopped at Step 2 with nothing built for that task. S108 passed — `scaffold` re-recommended the
+prototype's sandbox stack on its merits, wrote no design files, and handed the look to `design-ui` —
+and exposed that a later session would have no trail to the prototype, so `scaffold` now records it as
+a pending look entry that `design-ui` starts from. S113 passed: every legacy `design-system.md` value
+was confirmed against the binding conventions, mapped, and the old file deleted only after asking.
+S122–S124 passed as a proxy — routing 21 phrases on the five descriptions alone, each landed on the
+intended skill — not as a live trigger test, which needs the plugin installed.
+
 ## [4.2.1] — 2026-09-03
 
 ### Fixed

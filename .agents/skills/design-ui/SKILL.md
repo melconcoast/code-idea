@@ -31,7 +31,7 @@ Settles how the product looks — in files a coding agent can read and check its
 ### Step 0 — Read the project, and check what exists
 - Read the root context file, `docs/development-roadmap.md`, `docs/product.md`, `docs/conventions.md`, and `docs/decisions.md`. The screens come from the roadmap's modules; who uses them, and on what device, comes from `product.md`.
 - Look for `DESIGN.md`, `docs/design/`, a legacy `docs/design-system.md`, and UI already built — stylesheets, theme config, view templates. Any of these makes this a re-run or a migration: say which, and that what's there will be confirmed rather than assumed. Tokens or faces that `docs/conventions.md` makes binding are the exception — state them as constraints the design works inside, don't re-ask them as choices.
-- Surface a `Status: Pending` design decision in `docs/decisions.md` first — decide it now, or stop here and leave it parked.
+- Surface a `Status: Pending` design decision in `docs/decisions.md` first — decide it now, or stop here and leave it parked. One left by `scaffold` names the prototype to import: start Step 1 there, and settle that entry once the look is confirmed.
 
 ### Step 1 — Find the reference
 Read `references/visual-direction.md` first. Then ask what exists, and take the first that applies:
