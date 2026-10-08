@@ -16,7 +16,9 @@ whether they look like the design. That gap is the whole reason this check exist
 1. **Get the screen's real output.** Start the app the way the project's root context file says to
    run it. When the app can't serve the screen yet — the view exists but its route arrives in a later
    task — call the view's own render function with the scenario's data and save the result to a
-   temporary file beside a copy of the project's stylesheet, so its links resolve. That is the code
+   temporary file beside a copy of the project's stylesheet, so its links resolve. A root-relative link
+   (`/styles.css`) won't resolve from disk — serve that temporary folder from a throwaway local static
+   server instead, and leave the markup alone. That is the code
    under test producing the page; hand-written markup is not. Neither possible? Report the scenario
    not checked, naming what would make it checkable — inventing a start command is a project
    decision, not a verification step.

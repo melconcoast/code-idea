@@ -63,7 +63,9 @@ splitting), and S121 (no closed item touched). It left the visual scenario hones
 than passing it, and exposed four gaps, now fixed: a view built before its route can be rendered from
 its own output; *not yet* checkable stays `[ ]` while *not here* is `[~]`; sizes the project can't
 tokenize may be literal; headless browsers can silently render wider than the requested width.
-S117's rendered comparison of a built screen, S118, S119, and S120 remain unrun — open, not passing.
+Re-run under the fix, S117 passed: the built queue view, rendered from its own output at confirmed
+375px and 1280px, matched all seven claims of its visual scenario, measured in the page, and only then
+was the task closed. S118, S119, and S120 remain unrun — open, not passing.
 
 ## [4.2.1] — 2026-09-03
 
