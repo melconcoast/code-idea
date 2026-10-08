@@ -69,9 +69,11 @@ unstyled list that shows the right orders passes every data test and fails the s
 - A mismatch the verdict names is a failing scenario, handled like any other failure.
 - *Not checked* has two causes, and they take different glyphs. **Not yet** — the screen becomes
   renderable in a later task of this plan — leaves the scenario `[ ]`, naming that task; it gets
-  checked when the screen can be. **Not here** — no browser in this environment at all — is `[~]` with
-  what would verify it, after verifying what can be: the states render, the tokens are the ones
-  `DESIGN.md` names. Never `[x]` on faith, and a task with any scenario still `[ ]` stays `[ ]`.
+  checked when the screen can be. **Not here** — no browser in this environment at all — is `[~]`,
+  annotated `(reframed: not checked here — <what would verify it>)`, after verifying what can be: the
+  states render, the tokens are the ones `DESIGN.md` names. Never `[x]` on faith. Either way the task
+  itself follows the existing rule — it may close while a scenario stays open, because the open or
+  annotated scenario is where the gap stays visible.
 - If the code is right and the mockup is what's wrong, stop and confirm, as below. The mockup is the
   spec; changing it is `design-ui`'s job and the user's call.
 

@@ -65,7 +65,15 @@ its own output; *not yet* checkable stays `[ ]` while *not here* is `[~]`; sizes
 tokenize may be literal; headless browsers can silently render wider than the requested width.
 Re-run under the fix, S117 passed: the built queue view, rendered from its own output at confirmed
 375px and 1280px, matched all seven claims of its visual scenario, measured in the page, and only then
-was the task closed. S118, S119, and S120 remain unrun — open, not passing.
+was the task closed. The last three then ran on their own fixture copies. S118 passed: with no browser, the visual
+scenario was reported *not checked*, verified only as far as served markup and stylesheet allow, and
+recorded `[~]` with what would verify it — no browser launched. S119 passed: a mockup demanding a
+color `docs/conventions.md` forbids stopped the loop, with the mockup, `DESIGN.md`, and the
+conventions untouched and no new color in the stylesheet; it stopped only at verification, though,
+so `execute-plan` now stops on that conflict at Step 2, before building — that earlier stop is
+unrun. S120 passed: a pre-5.0 project with no design files built its UI task against its conventions
+and noted the missing references once. Also clarified: a route that only serves a screen is not a
+UI task, and a `[~]` *not here* scenario carries a fixed annotation.
 
 ## [4.2.1] — 2026-09-03
 
