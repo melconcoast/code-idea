@@ -82,7 +82,12 @@ and exposed that a later session would have no trail to the prototype, so `scaff
 a pending look entry that `design-ui` starts from. S113 passed: every legacy `design-system.md` value
 was confirmed against the binding conventions, mapped, and the old file deleted only after asking.
 S122–S124 passed as a proxy — routing 21 phrases on the five descriptions alone, each landed on the
-intended skill — not as a live trigger test, which needs the plugin installed.
+intended skill — not as a live trigger test, which needs the plugin installed. S107 passed: the prototype saved
+byte-identical, its look confirmed apart from its sandbox stack, Tailwind and hardcoded hex dropped
+for the project's tokens. S110 passed only in part: the repo mockup kept its linked tokens and was
+screenshotted headless, but the interactive browser tool needed the user to choose between two
+connected browsers, and the rendered-artifact preview path was not exercised — S110's preview half
+stays open.
 
 ## [4.2.1] — 2026-09-03
 

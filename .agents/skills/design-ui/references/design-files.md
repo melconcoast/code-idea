@@ -110,8 +110,8 @@ module is planned — that's the check `plan-module` makes.
     properties. The build later adopts those same values, so mockup and product can't drift.
 
   The mockup's own `<style>` holds layout — grids, spacing, column widths, rule thickness — plus any
-  size the project has no token for and its conventions forbid adding, with that size recorded in
-  `DESIGN.md`. It references tokens with `var(...)`. A color value inside a mockup is a second source
+  face or size the project has no token for and its conventions forbid adding, with that value
+  recorded in `DESIGN.md`. It references tokens with `var(...)`. A color value inside a mockup is a second source
   of truth.
 - **Previews inline, the repo file doesn't.** A rendered preview (a chat artifact, a published page)
   can't follow a relative link, so inline the token stylesheet into the *preview copy* only. The file
@@ -127,8 +127,9 @@ module is planned — that's the check `plan-module` makes.
 
 When a browser tool is available, save a screenshot of each confirmed mockup at a phone width (375px)
 and a desktop width (1280px) as `docs/design/reference/[screen]-375.png` and
-`docs/design/reference/[screen]-1280.png`. `test-and-verify` renders the built screen at the same
-widths and compares. Without a browser, the HTML mockup is the reference and comparison is by reading
+`docs/design/reference/[screen]-1280.png`. Confirm the width the page was laid out at, not just the
+image size — some headless browsers enforce a minimum window width and silently lay out wider, then
+crop. `test-and-verify` renders the built screen at the same widths and compares. Without a browser, the HTML mockup is the reference and comparison is by reading
 it — say so in the report.
 
 A built page saved as a reference — its rendered HTML, when there's no browser to screenshot it — keeps
