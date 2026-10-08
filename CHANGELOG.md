@@ -84,10 +84,12 @@ was confirmed against the binding conventions, mapped, and the old file deleted 
 S122–S124 passed as a proxy — routing 21 phrases on the five descriptions alone, each landed on the
 intended skill — not as a live trigger test, which needs the plugin installed. S107 passed: the prototype saved
 byte-identical, its look confirmed apart from its sandbox stack, Tailwind and hardcoded hex dropped
-for the project's tokens. S110 passed only in part: the repo mockup kept its linked tokens and was
-screenshotted headless, but the interactive browser tool needed the user to choose between two
-connected browsers, and the rendered-artifact preview path was not exercised — S110's preview half
-stays open.
+for the project's tokens. S110's browser half then passed interactively, once the user picked the
+browser: the repo mockup, served from a local static server because the browser tool refuses `file://`,
+loaded its linked stylesheet with no inlined colors, laid out at a confirmed 1280px, and — after the
+window refused to go below 500px, the exact trap the skill warns about — at a confirmed 375px inside a
+fixed-width frame. The repo file was unchanged by the preview. The rendered-artifact preview row was
+not exercised, and stays open.
 
 ## [4.2.1] — 2026-09-03
 

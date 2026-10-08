@@ -94,7 +94,7 @@ capability — never assume one exists.
 | The environment can… | Show the mockup by… |
 |---|---|
 | Render or publish an HTML page (a chat artifact surface, a page-publishing tool) | Rendering it there, and naming the repo path it was saved to |
-| Drive a browser | Opening the file and taking screenshots at a phone and a desktop width |
+| Drive a browser | Opening the file and taking screenshots at a phone and a desktop width. If the tool refuses `file://` URLs, serve the repo from a throwaway local static server — relative token links resolve the same way. If the window won't go narrow enough, render the page in a fixed-width frame and confirm the width from inside it |
 | Neither | Giving the path, and asking the user to open it locally |
 
 In a chat surface with no project filesystem, produce each file as content and say exactly which path
