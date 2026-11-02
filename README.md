@@ -2,7 +2,7 @@
 
 *"Code this idea"* — take a plan or idea from conversation to a state a coding agent can actually build from correctly.
 
-Five [Agent Skills](https://agentskills.io) — a Claude Code **plugin**, and installable on Codex, Cursor, Gemini CLI, Copilot, Kimi Code and Deep Code too. Four run in sequence — **`scaffold`** turns a plan into the docs a coding agent needs, **`design-ui`** settles how the product looks before anything is built (projects with a UI only), **`plan-module`** turns one module of the roadmap it produces into a phase-based execution spec, and **`execute-plan`** builds that spec task by task — with a fifth, **`test-and-verify`**, doing the running and fixing of tests on their behalf.
+Six [Agent Skills](https://agentskills.io) — a Claude Code **plugin**, and installable on Codex, Cursor, Gemini CLI, Copilot, Kimi Code and Deep Code too. Five run in sequence — **`scaffold`** turns a plan into the docs a coding agent needs, **`design-brand`** imports or builds the brand (products with a public face), **`design-ui`** settles how the product looks before anything is built (projects with a UI only), **`plan-module`** turns one module of the roadmap it produces into a phase-based execution spec, and **`execute-plan`** builds that spec task by task — with a sixth, **`test-and-verify`**, doing the running and fixing of tests on their behalf.
 
 `scaffold` turns a project plan, idea, or planning conversation into a complete, AI-coding-agent-ready documentation set — a lean root context file in whichever format your target agent reads natively (`CLAUDE.md` for Claude Code, `AGENTS.md` for Codex or Antigravity, or both for mixed/generic targets), plus linked docs (architecture, decisions, conventions, development roadmap, product), and, for monorepos, nested per-subsystem context files.
 
@@ -32,6 +32,7 @@ The **content** is identical regardless of layout — only what a given project 
 | `docs/conventions.md` | Naming/structural rules beyond what a linter enforces |
 | `docs/development-roadmap.md` | **Always** — modules and sub-modules, in dependency order, with scope boundaries |
 | `docs/product.md` | Business/feature rules an agent needs to implement correctly |
+| `docs/brand/` | Never by `scaffold` — `design-brand` writes it when a brand needs importing or making |
 | `DESIGN.md`, `docs/design/` | Never by `scaffold` — `design-ui` writes them next, when there's a UI |
 | Nested `<subsystem>/AGENTS.md` or `<subsystem>/CLAUDE.md` | Genuine monorepo, subsystems with materially different conventions — matches the root layout |
 
@@ -56,6 +57,30 @@ The **content** is identical regardless of layout — only what a given project 
 - **Recurring procedures become Skills**, not static docs.
 
 See [`references/best-practices.md`](.agents/skills/scaffold/references/best-practices.md) for the full reasoning, [`references/recommendation-heuristics.md`](.agents/skills/scaffold/references/recommendation-heuristics.md) for the stack/database defaults it draws on, and [`references/agent-profiles.md`](.agents/skills/scaffold/references/agent-profiles.md) for the sourced per-agent facts behind the container table above.
+
+## design-brand — who it is, before how it looks
+
+`design-ui` can make a product look intentional; it can't decide who the product *is*. When a
+product has a public face — a landing page, a store listing, a counter it's handed over at — the
+brand comes first, and `design-brand` settles it in `docs/brand/`, the source every later agent
+reads.
+
+- **Imports a brand that already exists.** A founders' book, an agency's guidelines, a logo pack —
+  saved unchanged, confirmed once as the source, then audited: every text pairing measured for
+  contrast (each failure becomes a rule), every font's licence checked for web and app embedding,
+  every promise and proof line checked against what the product does today (false ones become
+  never-say rules), every logo file checked against the book's own rules (corrections recorded in
+  `CORRECTIONS.md`, the rest listed don't-use), a licence recorded per photo, and the book's open
+  questions turned into pending decisions. Each finding is confirmed on its own.
+- **Builds one when there isn't.** Strategy first, scaled to the project — positioning ("the only
+  ___ that ___"), a value proposition in one breath, a promise the product keeps today — then voice,
+  then two distinctive assets the brand will own for years. Only then the palette (every colour
+  with a role and a reason), licensed type, and two or three SVG wordmark explorations.
+- **Says what it can't make.** A professional logo pack, a photo shoot, a trademark search, and
+  legal wording become briefs and pending decisions — never stand-in assets presented as finished.
+
+`design-ui` then maps the brand onto the product in `DESIGN.md`: brand colours into product roles,
+contrast rules into its Do's and Don'ts, logos by file. It never edits `docs/brand/`.
 
 ## design-ui — the look, settled before it's built
 
@@ -180,7 +205,7 @@ reads as a pass.
 
 ## Installation
 
-These five skills follow the [Agent Skills](https://agentskills.io) open standard, so they run on
+These six skills follow the [Agent Skills](https://agentskills.io) open standard, so they run on
 any agent that reads `SKILL.md` — not just Claude Code. Pick whichever line matches your setup.
 
 **Claude Code** — install as a plugin, so `/plugin` keeps it updated:
@@ -190,7 +215,7 @@ any agent that reads `SKILL.md` — not just Claude Code. Pick whichever line ma
 /plugin install code-idea@melconcoast
 ```
 
-Skills are then invoked as `/code-idea:scaffold`, `/code-idea:design-ui`, `/code-idea:plan-module`, `/code-idea:execute-plan`, and `/code-idea:test-and-verify`, or triggered naturally by what you ask for.
+Skills are then invoked as `/code-idea:scaffold`, `/code-idea:design-brand`, `/code-idea:design-ui`, `/code-idea:plan-module`, `/code-idea:execute-plan`, and `/code-idea:test-and-verify`, or triggered naturally by what you ask for.
 
 **Codex, Cursor, Gemini CLI, GitHub Copilot, Kimi Code, Deep Code** — either the
 [skills CLI](https://www.skills.sh):
@@ -211,7 +236,7 @@ git clone https://github.com/melconcoast/code-idea
 directory your agent reads. Most honour the shared `.agents/skills/` convention, so
 `cp -R code-idea/.agents/skills/* your-project/.agents/skills/` is usually the whole job.
 
-**Claude.ai / Claude Desktop** — download the `scaffold.skill`, `design-ui.skill`, `plan-module.skill`, `execute-plan.skill`, and `test-and-verify.skill` assets from a [release](https://github.com/melconcoast/code-idea/releases) and add them as skills.
+**Claude.ai / Claude Desktop** — download the `scaffold.skill`, `design-brand.skill`, `design-ui.skill`, `plan-module.skill`, `execute-plan.skill`, and `test-and-verify.skill` assets from a [release](https://github.com/melconcoast/code-idea/releases) and add them as skills.
 
 **From source, for Claude Code** — no build step. Point a local marketplace at your clone: `/plugin marketplace add /path/to/code-idea`.
 
@@ -222,7 +247,7 @@ directory your agent reads. Most honour the shared `.agents/skills/` convention,
 
 ## Usage
 
-Once installed, just ask naturally — "let's get this ready for Claude Code," "scaffold AGENTS.md for this project," "turn this plan into context files." If the project has a UI, "design the UI" or "import my prototype" hands off to `design-ui` next. Once the roadmap exists and you're ready to build, "plan the next module" or "plan module 3" hands off to `plan-module`; once a plan file exists, "execute the plan" or "build task 2.1" hands off to `execute-plan`, which calls `test-and-verify` to prove each task before closing it. See [`examples/`](examples/) for a sample of what the output looks like for a small multi-subsystem project.
+Once installed, just ask naturally — "let's get this ready for Claude Code," "scaffold AGENTS.md for this project," "turn this plan into context files." If the product has a public face, "create a brand" or "import my brand guidelines" hands off to `design-brand`; if it has a UI, "design the UI" or "import my prototype" hands off to `design-ui` next. Once the roadmap exists and you're ready to build, "plan the next module" or "plan module 3" hands off to `plan-module`; once a plan file exists, "execute the plan" or "build task 2.1" hands off to `execute-plan`, which calls `test-and-verify` to prove each task before closing it. See [`examples/`](examples/) for a sample of what the output looks like for a small multi-subsystem project.
 
 ## Repository structure
 
@@ -239,6 +264,12 @@ Once installed, just ask naturally — "let's get this ready for Claude Code," "
 │   │       ├── recommendation-heuristics.md  # stack/DB/naming defaults, with sources
 │   │       ├── agent-profiles.md         # what each target agent reads and how, with sources
 │   │       └── templates.md              # skeleton for each doc type
+│   ├── design-brand/
+│   │   ├── SKILL.md                      # the brand, imported and audited or built, in docs/brand/
+│   │   └── references/
+│   │       ├── brand-strategy.md         # positioning, promise, voice, distinctive assets
+│   │       ├── brand-system.md           # palette and contrast, type licences, logo pack, imagery
+│   │       └── brand-files.md            # docs/brand/ layout, README and CORRECTIONS.md formats
 │   ├── design-ui/
 │   │   ├── SKILL.md                      # the look, settled in DESIGN.md + mockups before building
 │   │   └── references/
@@ -264,6 +295,7 @@ Once installed, just ask naturally — "let's get this ready for Claude Code," "
 │   └── install.sh                        # install into any supported agent, no plugin system needed
 ├── examples/
 │   ├── sample-output/                    # example generated file tree
+│   ├── fixtures/                         # runnable fixtures: pickup-queue (I), brand-handoff (L)
 │   └── test-scenarios.md                 # scenarios a change must be checked against
 ├── AGENTS.md                             # this repo's own content file
 ├── CLAUDE.md                             # @AGENTS.md import, so Claude Code loads it too
@@ -272,7 +304,7 @@ Once installed, just ask naturally — "let's get this ready for Claude Code," "
 └── LICENSE
 ```
 
-All five skills ship. `scaffold` writes the docs set, `design-ui` settles the look, `plan-module` cuts a module into a plan file,
+All six skills ship. `scaffold` writes the docs set, `design-brand` settles the brand, `design-ui` settles the look, `plan-module` cuts a module into a plan file,
 `execute-plan` builds it, and `test-and-verify` proves each piece before a box gets checked.
 
 ## Contributing

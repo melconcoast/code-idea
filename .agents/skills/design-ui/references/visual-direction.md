@@ -70,6 +70,37 @@ list calls generic — the direction works inside it: that constraint is the des
 obstacle to it. The avoid-list is for choices still open, not for re-litigating decided ones; where
 it's silent on a face, match what the project already uses.
 
+## Mapping a brand onto a UI
+
+When `docs/brand/README.md` exists, the brand is fixed and the mapping is the design. Its colours,
+faces, logo files, voice, and contrast rules are inputs — don't re-ask them as choices. What gets
+proposed and confirmed is how they land on the product.
+
+- **Re-skin, don't re-layout.** On screens already built, a brand changes the look, not the
+  structure. If the brand shows a structural change (its own pages picture the product a certain
+  way), raise each one as its own question.
+- **Brand colours become product roles, usually narrower ones.** A brand accent that means
+  "progress" in marketing might mean only "live or done" in the app. The primary action often gets
+  its own colour rather than the accent, so the accent stays free to signal state. Apps usually
+  carry less accent than marketing pages; say how much.
+- **Contrast rules carry over** into `## Do's and Don'ts` word for word, and campaign-only colours
+  never become tokens. A non-text accent that carries meaning needs 3:1 against its ground; below
+  that, it always sits beside words that say the same thing. A brand's per-screen limits on its
+  accent count UI elements, not the logo's own artwork.
+- **Dark mode is a decision, not a default.** If the brand shows itself on dark, offer dark mode,
+  with the brand's dark values — and record the answer.
+- **Faces get product sizes.** A display face built for billboards is often too wide or too heavy for
+  app titles; map it to marketing surfaces and pick the heading cut for the app.
+- **Logos by file.** Components reference the files in `docs/brand/logo/` — which variant on which
+  ground — and never set the name in a font.
+- **Voice reaches the mockups.** Copy follows the brand's say/don't-say table and trust-moment rule,
+  and its never-say list goes into `## Do's and Don'ts`.
+- **Binding conventions still bind.** If `docs/conventions.md` fixes a palette the brand replaces,
+  that's a conflict to raise: adopting the brand changes the conventions, and that edit is `scaffold`'s.
+  Never design past them quietly.
+- **A brand-level problem goes back.** A pairing the product needs that fails contrast, or a face
+  unusable on one platform, is a question for `design-brand`. `docs/brand/` is never edited here.
+
 ## Importing a prototype or handoff
 
 - **Save the source, not a summary.** Copy the artifact code, the export bundle, or the screenshots

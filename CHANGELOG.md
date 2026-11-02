@@ -1,5 +1,110 @@
 # Changelog
 
+## [5.1.0] — 2026-11-01
+
+A sixth skill, `design-brand`, which settles the brand before `design-ui` maps it onto screens.
+
+### Why
+On a real project, the work went past `design-ui`'s mockups into a brand: a founders' book with
+a story, voice, logo pack, palette, type, icons, imagery, and motion, which then had to be mapped
+onto an existing UI system. Nothing in the plugin handled that, and the project's lessons were
+specific. The book had to be imported and kept as the source, with project decisions overriding it.
+Its colour page forbade one failing text pairing while two more failed when measured. The vendor's
+logo pack shipped light-background files in the wrong colour. The original title face needed a
+paid licence to embed. The book's proof line claimed a certification the company didn't hold. Its
+open questions never became pending decisions. `design-ui` couldn't absorb this: its description
+had 59 characters to spare, and brand and product-UI mapping need different owners.
+
+### Added
+- **`design-brand`**, run after `scaffold` and before `design-ui` on products with a public face.
+  - **Imports** a brand book, guidelines, or logo pack. Saves them unchanged, confirms the source
+    once, then audits it and confirms each finding on its own. The audit covers: contrast for every
+    allowed text pairing (each failure becomes a rule), font licences for web and app embedding,
+    every promise and proof line against `docs/product.md`, `docs/decisions.md`, and the code (false
+    ones become never-say rules), every logo file against the book's own rules (corrections recorded
+    in `CORRECTIONS.md`, the rest listed don't-use), a licence per photo, and the book's open
+    questions (each becomes a pending decision).
+  - **Builds** a brand from the product story when there is none. Strategy first, scaled to the
+    project: positioning ("the only ___ that ___"), a one-breath value proposition, a promise kept
+    today, and competitors' claims. Brand architecture, category, and archetype are asked only when
+    they apply. Then voice (three dials, "we are / we are not", say/don't-say, trust moments always
+    plain), two distinctive assets, and only then palette, licensed type, and SVG wordmark
+    explorations.
+  - **Never fakes an asset.** A professional logo pack, a photo shoot, a trademark check, legal
+    wording, and market tests become briefs and pending decisions.
+  - **Writes `docs/brand/`.** Its only other writes are append-only `docs/decisions.md` entries
+    (accepted or pending), pending-decision items, and one `## Related docs` line.
+- Fixture L (`examples/fixtures/brand-handoff/`), an overlay on the pickup-queue fixture with seeded
+  flaws, and scenarios S125–S141.
+
+### Changed
+- `design-ui` reads `docs/brand/README.md` first. With a brand, its directions differ in how the
+  brand lands on screens, not in palette, and its new "Mapping a brand onto a UI" guidance covers
+  narrower product roles for brand colours, contrast rules carried into `## Do's and Don'ts`, logos
+  by file, and dark mode as a decision. It never edits `docs/brand/`.
+- `scaffold` asks whether a brand exists to import, should be made, or is parked, and hands off to
+  `design-brand` first when it is needed. A re-run keeps `design-brand`'s `## Related docs` line.
+- The release workflow's skill-count guard is now 6, and `scripts/install.sh` names the new skill.
+
+### Verification so far
+Two rounds of runs on fresh fixture copies — three, then four — each by an agent with no knowledge
+of this change or the fixture's list of seeded flaws.
+- **Import (Fixture L).** S125–S131 passed. The run confirmed the source once, then asked 18
+  questions, one per turn. It found every seeded flaw, plus an extra contrast failure the fixture
+  hadn't listed (Rye on Oven, 1.87:1), a raster that wasn't a render of the mark, and a missing
+  one-colour file. It corrected only the SVG fill, measured contrast with a script, and checked
+  licences against the foundries' own pages. It turned a "remembers your order" line the code
+  couldn't back into a never-say rule for product copy. It wrote nothing outside `docs/brand/`,
+  appended decisions, and the context file's pending items and `## Related docs` line.
+- **S132 was partial in the first run.** The run noticed the conventions-palette conflict but kept
+  it out of its report to the user, and it used a pending-decisions heading that didn't match
+  `scaffold`'s. Step 5 now requires reporting conflicts with the project's own docs, and the skill
+  defers to `templates.md` for the heading. Both fixes passed in the second round.
+- **Build (pickup app plus a public-order decision).** S133–S135 passed: 27 single-decision turns,
+  strategy before voice, two distinctive assets before any colour, contrast measured before
+  palettes were offered, licences fetched from source, three labelled wordmark explorations, a
+  working mark with a pending decision, and three briefs.
+- **Internal tool.** S138 passed: one question, then a stop with nothing written.
+- **Routing.** S139 and S141 passed on a description-only read. The run exposed two description
+  gaps, both fixed: bare "positioning" pulled in an abstract question, and `design-ui` never said it
+  maps a brand. S140 covered S122's phrases and five of S124's sixteen, not all sixteen.
+- **Fixed from the runs:** an import names the gaps a book leaves (voice dials, trust moments) in
+  one question; contrast rules cover only pairings the book's roles imply; a set (a palette with its
+  rules, the voice lines) is one decision; a promise kept by people, not software, is asked rather
+  than read from code; a built mark gets provisional clear space; live-type SVGs are previewed with
+  their face loaded; a public surface accepted in `docs/decisions.md` counts before it is built.
+- **Second round, on the fixed text.**
+  - **Import re-run: S125–S132 all passed.** 24 single-decision questions. The report to the user
+    named each conflict and who owns its fix: the conventions palette and root rules to `scaffold`,
+    tokens to `design-ui`, font bundling to `execute-plan`. The heading matched `scaffold`'s exactly.
+    The run also found a sprig the book places over one letter but the files draw over another, and
+    routed it to the studio rather than picking one.
+  - **S136 passed.** `design-ui` mapped the brand to four tokens, each tracing to a brand colour with
+    a narrower product role. It carried the contrast rules over word for word, referenced the logo by
+    file, proposed three directions that differed in density and accent placement rather than palette,
+    raised the conventions conflict before designing, and left `docs/brand/` untouched.
+  - **S137 passed.** A colour swap was classified a refresh. A wholesale pivot was classified a
+    rebrand and confirmed after twelve downstream files were listed with their owners. Every
+    `docs/decisions.md` change was a pure append. The undeliverable new promise was kept out of copy.
+  - **`scaffold` handoff and re-run passed (S135's re-run half).** It asked the brand question, wrote
+    no brand content, handed off `design-brand` → `design-ui` → `plan-module`, and kept the
+    `docs/brand/README.md` link through a re-run.
+  - **S140 passed.** A blind router given all 32 phrases (S28, S56, S65, S95, S122, S123, S139, S141,
+    and new brand phrases) picked the right skill for every one, 30 at high confidence.
+  - **Fixed from round two:** unverified claims are pending, never "never-say" (a contradiction
+    between two reference files); where pending decisions go when there's no Critical rules section;
+    the delivered `handoff/` folder is named as superseded; `design-ui` raises a binding convention
+    the brand replaces as a conflict rather than designing inside it, mocks up brand directions, flags
+    a meaningful non-text accent under 3:1, and names convention changes for `scaffold`; `scaffold`
+    skips `design-brand` when `docs/brand/` already exists. Both new descriptions were trimmed under
+    1024 bytes as well as characters, since em dashes make them longer in bytes.
+- **Live, in Claude Code, on the round-two text: passed.** With the plugin installed from the local
+  repo, the import ran on Fixture L and found every seeded flaw. It also found two flaws the fixture
+  carried but its README didn't list: the book names a one-colour logo file the pack doesn't contain,
+  and the hero photo is a 320×240 brown gradient, not the counter shot the book describes. Both are
+  now listed in the fixture README and checked in S127 and S130. The skill text already covered both,
+  so it didn't change.
+
 ## [5.0.0] — 2026-10-08
 
 Major release. A fifth skill, `design-ui`, and `scaffold` no longer writes a design doc.

@@ -1,9 +1,9 @@
 ---
 name: design-ui
-description: Use this skill when the user says things like "design the UI", "make mockups", "mock up the screens", "import my prototype", "bring my design handoff in", "redesign the queue screen", "set up DESIGN.md", or when scaffold or plan-module hands off because a project has screens but no visual reference. Not for writing a project's agent docs or roadmap — use scaffold. Not for building a screen from a plan file — use execute-plan. Settles how a project looks before it is built, so the coding agent works to a reference, not its own defaults. Imports an existing prototype, handoff bundle, design file, or screenshots — or proposes two or three distinct visual directions when there is none — and gets each choice explicitly confirmed. Writes DESIGN.md (design tokens plus the reasons behind them), a screen inventory covering every state, and one static HTML mockup per key screen under docs/design/, which plan-module and execute-plan then plan and verify against.
+description: Use this skill when the user says things like "design the UI", "make mockups", "mock up the screens", "import my prototype", "bring my design handoff in", "redesign the queue screen", "set up DESIGN.md", or when scaffold or plan-module hands off because a project has screens but no visual reference. Not for writing a project's agent docs or roadmap — use scaffold. Not for building a screen from a plan file — use execute-plan. Maps an existing brand in docs/brand/ onto screens — making one is design-brand's. Settles how a project looks before it is built, so the coding agent works to a reference. Imports an existing prototype, handoff bundle, design file, or screenshots — or proposes two or three distinct visual directions when there is none — and gets each choice explicitly confirmed. Writes DESIGN.md (design tokens plus the reasons behind them), a screen inventory covering every state, and one static HTML mockup per key screen under docs/design/, which later skills plan and verify against.
 license: MIT
 metadata:
-  version: "5.0.0"
+  version: "5.1.0"
 ---
 
 # design-ui
@@ -29,12 +29,13 @@ Settles how the product looks — in files a coding agent can read and check its
 ## Workflow
 
 ### Step 0 — Read the project, and check what exists
-- Read the root context file, `docs/development-roadmap.md`, `docs/product.md`, `docs/conventions.md`, and `docs/decisions.md`. The screens come from the roadmap's modules; who uses them, and on what device, comes from `product.md`.
-- Look for `DESIGN.md`, `docs/design/`, a legacy `docs/design-system.md`, and UI already built — stylesheets, theme config, view templates. Any of these makes this a re-run or a migration: say which, and that what's there will be confirmed rather than assumed. Tokens or faces that `docs/conventions.md` makes binding are the exception — state them as constraints the design works inside, don't re-ask them as choices.
+- Read the root context file, `docs/development-roadmap.md`, `docs/product.md`, `docs/conventions.md`, `docs/decisions.md`, and `docs/brand/README.md` if it exists. The screens come from the roadmap's modules; who uses them, and on what device, comes from `product.md`.
+- Look for `DESIGN.md`, `docs/design/`, a legacy `docs/design-system.md`, and UI already built — stylesheets, theme config, view templates. Any of these makes this a re-run or a migration: say which, and that what's there will be confirmed rather than assumed. Tokens or faces that `docs/conventions.md` makes binding are the exception — state them as constraints the design works inside, don't re-ask them as choices — unless `docs/brand/` replaces them, which is a conflict to raise, not a constraint.
 - Surface a `Status: Pending` design decision in `docs/decisions.md` first — decide it now, or stop here and leave it parked. One left by `scaffold` names the prototype to import: start Step 1 there, and settle that entry once the look is confirmed.
 
 ### Step 1 — Find the reference
 Read `references/visual-direction.md` first. Then ask what exists, and take the first that applies:
+- **A brand** — `docs/brand/README.md` exists. Its story is the visual thesis, and its palette, faces, logo files, and contrast rules are inputs, not choices. Propose two or three directions as mockups under `docs/design/directions/`, differing in how the brand lands on the screens — surface, density, where the accent goes — never in a new palette. Read "Mapping a brand onto a UI" in `references/visual-direction.md`. A brand book or logo pack handed over with no `docs/brand/` goes to `design-brand` first.
 - **A prototype or handoff** — a chat artifact's code, a design tool's export bundle, a design file reachable through a connector the environment offers, or screenshots. Save it under `docs/design/reference/` as-is, and extract from the file, never from memory of it.
 - **Screens already built** — read its tokens out of the stylesheets and config, screenshot its screens if a browser tool exists, and save those as the current reference.
 - **Nothing** (a stylesheet with no screens counts as nothing, designed inside its tokens) — write a one-sentence visual thesis grounded in the product's domain and users, then propose two or three genuinely distinct directions, each a small static HTML mockup of the same key screen under `docs/design/directions/`. The user picks one, or mixes.
@@ -56,9 +57,9 @@ Read `references/visual-direction.md` first. Then ask what exists, and take the 
 - Show each one and confirm it before the next. If a browser tool exists, save screenshots at a phone width and a desktop width into `docs/design/reference/` — those are what verification compares against later.
 
 ### Step 5 — Link it and hand off
-- Add one line to the root context file's `## Related docs` pointing at `DESIGN.md` and `docs/design/screens.md`. That line, and a pending-decision entry when the user parks the look, are the only edits this skill makes outside `DESIGN.md` and `docs/design/` — the context file is `scaffold`'s, and the roadmap and plan files are never touched here.
+- Add one line to the root context file's `## Related docs` pointing at `DESIGN.md` and `docs/design/screens.md`. That line, and a pending-decision entry when the user parks the look, are the only edits this skill makes outside `DESIGN.md` and `docs/design/` — the context file is `scaffold`'s, the roadmap and plan files are never touched here, and `docs/brand/` is `design-brand`'s — a brand-level problem found while mapping is raised as a question for it, never fixed here.
 - Migrating from `docs/design-system.md`: show what moved where, and ask before deleting the old file. Content with no home in the new files is raised as a question, never dropped.
-- Report what was written, what's still deferred, and which modules now have a reference. Name any design choice that needs data or behavior the plan doesn't have yet — a flag that depends on today's date, a state the code can't produce — as a re-plan item, never a silent plan edit. Then offer `plan-module` — or, where a plan is already in flight, a re-plan so its open UI tasks gain visual scenarios.
+- Report what was written, what's still deferred, and which modules now have a reference. Name any design choice that needs data or behavior the plan doesn't have yet — a flag that depends on today's date, a state the code can't produce — as a re-plan item, never a silent plan edit. Name any binding convention the confirmed design now contradicts as a `scaffold` change. Then offer `plan-module` — or, where a plan is already in flight, a re-plan so its open UI tasks gain visual scenarios.
 
 ## Reference files
 - `references/visual-direction.md` — escaping the generic default, writing a visual thesis, proposing distinct directions, importing a prototype or handoff, and previewing per environment. Read this in Step 1.

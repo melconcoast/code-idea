@@ -98,6 +98,15 @@ Fixture F, whose repo also holds a pre-5.0 `docs/design-system.md` (slate palett
 never confirmed), a built queue screen styled from it, and no `DESIGN.md` or `docs/design/`. Phase 1
 of the plan — which built the queue screen — is `[x]`; Phase 2 has open UI tasks.
 
+## Fixture L — a brand handed over, with flaws
+
+Fixture I plus a founders' brand handoff — guidelines, a logo pack, a hero photo — and a decision
+that adds a public order page. **Checked in at `examples/fixtures/brand-handoff/`** as an overlay on
+`pickup-queue/`; its README says how to assemble it and lists each seeded flaw beside the scenario
+that checks it: two contrast failures the book never forbids, a logo file with the wrong fill, a
+desktop-only font licence, a proof line a decision contradicts, an unlicensed photo, three open
+items, and a palette that conflicts with the binding conventions.
+
 ## Scenarios
 
 | ID | Setup | Must produce | Must NOT produce |
@@ -332,6 +341,40 @@ Run these after any edit to any skill's frontmatter `description`.
 | S122 | "design the UI" / "make mockups" / "import my prototype" / "redesign the queue screen" | `design-ui` fires on each | `scaffold` or `execute-plan` firing instead |
 | S123 | "how do I get good UI out of a coding agent?" — abstract, no project in play | An explanation | Files written; an interview started |
 | S124 | S28's, S56's, S65's, and S95's phrases, re-run after `design-ui` shipped | All sixteen still fire the skill they always did | Any of them captured by `design-ui`'s description |
+
+## design-brand — import, audit, and confirmation scenarios
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S125 | Fixture L, "bring our brand in" | The handoff saved under `docs/brand/` unchanged, one explicit question naming which file and version is the source, then each audit finding confirmed on its own | Values extracted from a memory of the book; one "looks good" taken to confirm every finding; a handoff file edited in place without a record |
+| S126 | Fixture L | Every text pairing the book allows measured and recorded with its ratio and date; Sage on Flour and Rye on Crust each becoming a rule that says what to do instead | Only the pairing the book already forbids reported; a failing colour quietly darkened in the README |
+| S127 | Fixture L | The light-ground SVG's Sage sprig found by reading its fill, corrected to Ember only after confirming, recorded in `CORRECTIONS.md`; the PNG re-rendered from the corrected SVG or listed as don't-use; the one-colour file the book lists but the pack lacks reported, and asked for in a brief | Letterforms or geometry edited; a correction with no record; the wrong file left in use silently; the wordmark retyped in a font; a one-colour file made up to fill the gap |
+| S128 | Fixture L | Brandon Grotesque's desktop-only licence flagged before it is adopted for web or app, a licensed substitute recommended, and buy / substitute / defer offered | The face adopted as written; a substitute chosen without asking |
+| S129 | Fixture L | "Certified-organic flour" turned into a never-say rule with a true alternative, citing the 2026-09-02 decision, and offered to `scaffold` as a root rule; the unverifiable proof lines raised as questions | The claim carried into the README's lines; the context file's rules edited by `design-brand`; the unverifiable lines banned or kept without asking |
+| S130 | Fixture L | The hero photo listed as don't-use on public pages until a per-file licence is recorded; opened, and reported as a placeholder gradient rather than the counter shot the book describes, with the real shot in the photography brief | The photo adopted on "from a friend's shoot"; the file trusted by its name |
+| S131 | Fixture L | Each of the book's three open items a dated pending decision in `docs/decisions.md` and the context file | Open items left only inside the README |
+| S132 | Fixture L — `docs/conventions.md` binds a palette the brand replaces | The conflict named for `design-ui` and `scaffold`, `docs/conventions.md` untouched | Conventions edited; `DESIGN.md`, tokens, or `public/styles.css` written by `design-brand` |
+
+## design-brand — build, ownership, and re-run scenarios
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S133 | Fixture A after `scaffold`, no brand, "create a brand" | Positioning ("the only ___ that ___"), a one-breath value proposition, a promise the product keeps today, and competitors' claims — each pre-filled with its source and confirmed one at a time — then two distinctive assets named before any colour | The strategy bundled into one question; a palette before the assets; architecture or category asked of a single product nobody called a new category |
+| S134 | As S133, the logo step | Two or three SVG wordmark explorations under `docs/brand/logo/explorations/`, each labelled an exploration; the chosen one a working mark with a pending decision and `docs/brand/briefs/logo.md` | An exploration presented as a finished logo pack; generated images presented as brand photography |
+| S135 | Any `design-brand` run, then a `scaffold` re-run | Writes confined to `docs/brand/`, appended `docs/decisions.md` entries, pending-decision items, and one `## Related docs` line — which the re-run keeps | `DESIGN.md`, `docs/design/`, the roadmap, a plan file, or app code touched; a past decision entry edited |
+| S136 | Fixture L after `design-brand`, then `design-ui` | `DESIGN.md` mapping the brand's colours to product roles, its contrast rules in `## Do's and Don'ts`, logo components naming their files; directions that differ in how the brand lands, not in palette | A new palette proposed; `docs/brand/` edited by `design-ui`; the binding-conventions conflict designed past |
+| S137 | Fixture L after `design-brand`: "refresh the brand colours", then "we're now for wholesale cafés, not regulars" | The first classified a refresh; the second a rebrand, confirmed explicitly after listing every file it reaches | A rebrand written as a refresh; the old decision entries edited rather than superseded |
+| S138 | Fixture I as-is (staff-only, no public surface), "create a brand" | The project named as an internal tool and the user asked whether a public surface exists, before any interview; a full run only on an explicit yes | A full brand interview on a staff-only tool unprompted |
+
+## design-brand — trigger scenarios
+
+Run these after any edit to any skill's frontmatter `description`.
+
+| ID | Setup | Must produce | Must NOT produce |
+|---|---|---|---|
+| S139 | "create a brand" / "brand book" / "import my brand guidelines" / "brand colours" / "design a logo" | `design-brand` fires on each | `design-ui` or `scaffold` firing instead |
+| S140 | S122's phrases plus "set up DESIGN.md", and S124's sixteen, re-run after `design-brand` shipped | Each still fires the skill it always did | Any of them captured by `design-brand` |
+| S141 | "what is brand positioning?" — abstract, no project in play | An explanation | Files written; an interview started |
 
 ## Distribution and cross-agent installation
 

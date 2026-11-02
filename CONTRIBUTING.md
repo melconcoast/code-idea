@@ -11,9 +11,9 @@ Code and Deep Code all read natively. Claude Code is the one agent that doesn't 
 must always move together, or the plugin loads zero skills without erroring.
 
 Each skill owns a directory under `.agents/skills/`, holding its own
-`SKILL.md` and its own `references/`. Five skills ship. Four run in sequence — `scaffold`,
-`design-ui` (projects with a UI only), `plan-module`, `execute-plan` — and the fifth, `test-and-verify`,
-is a service the others call rather than a stage of its own. No skill name is reserved-but-unbuilt; if you propose a sixth, it gets no
+`SKILL.md` and its own `references/`. Six skills ship. Five run in sequence — `scaffold`,
+`design-brand` (products with a public face), `design-ui` (projects with a UI only), `plan-module`, `execute-plan` — and the sixth, `test-and-verify`,
+is a service the others call rather than a stage of its own. No skill name is reserved-but-unbuilt; if you propose a seventh, it gets no
 directory until it is written, because git can't track an empty directory and a stub `SKILL.md`
 registers a broken skill for everyone.
 
@@ -23,7 +23,11 @@ registers a broken skill for everyone.
 - **`.agents/skills/scaffold/references/recommendation-heuristics.md`** — stack/database/caching/naming defaults the skill proposes during its interview. **This file is expected to age** — tooling and best practices shift. If something here is outdated, that's a welcome PR, not a bug report.
 - **`.agents/skills/scaffold/references/agent-profiles.md`** — what each coding agent reads and how it loads it. **This file is expected to age**, like the heuristics file, and every claim carries a source URL and verified-on date. A stale entry is a welcome PR. Never add a row you can't cite from that agent's own docs.
 - **`.agents/skills/scaffold/references/templates.md`** — the skeleton structure for each generated doc type. The `docs/development-roadmap.md` section here is the contract `plan-module` reads; a change to that block is a change to both skills.
-- **`.agents/skills/design-ui/SKILL.md`** — how a project's look is found, confirmed, and written into the repo before anything is built. It owns `DESIGN.md` and everything under `docs/design/`; its only write elsewhere is one `## Related docs` line in the context file. It never decides the stack — that's `scaffold`'s.
+- **`.agents/skills/design-brand/SKILL.md`** — how a brand is imported and audited, or built from the product story, before `design-ui` maps it onto screens. It owns everything under `docs/brand/`; its only writes elsewhere are appended `docs/decisions.md` entries (accepted or pending, never editing a past one), pending-decision items in the context file, and one `## Related docs` line. It never writes `DESIGN.md`, a token, a mockup, or a convention — those are `design-ui`'s and `scaffold`'s.
+- **`.agents/skills/design-brand/references/brand-strategy.md`** — positioning, value proposition, promise, differentiation, architecture, voice, distinctive assets, refresh versus rebrand. Each element ends in a check; new strategy guidance should too.
+- **`.agents/skills/design-brand/references/brand-system.md`** — palette and contrast, type licences, the logo-pack audit and corrections, iconography, imagery licences, motion, and what an agent can't make. **Partly expected to age**: thresholds and licence questions are stable; named icon sets and font sources shift. A stale entry is a welcome PR.
+- **`.agents/skills/design-brand/references/brand-files.md`** — the `docs/brand/` layout and the README, `CORRECTIONS.md`, and brief formats `design-ui` reads. A change to the README's sections is a change to what `design-ui` maps.
+- **`.agents/skills/design-ui/SKILL.md`** — how a project's look is found, confirmed, and written into the repo before anything is built. It owns `DESIGN.md` and everything under `docs/design/`; its only write elsewhere is one `## Related docs` line in the context file. It never decides the stack — that's `scaffold`'s — and never edits `docs/brand/`, which it maps rather than owns.
 - **`.agents/skills/design-ui/references/visual-direction.md`** — escaping the generic default, visual theses, proposing directions, importing a prototype. **Expected to age**: what counts as a generic default shifts. A stale entry is a welcome PR.
 - **`.agents/skills/design-ui/references/design-files.md`** — the `DESIGN.md`, `screens.md`, and mockup formats the other skills read. **Expected to age**: `DESIGN.md` follows an alpha spec, so verify a section name or CLI command against it before relying on one.
 - **`.agents/skills/plan-module/SKILL.md`** — how a roadmap module is located, cut into phases, and written out as a plan file. It reads the roadmap contract rather than restating it, so a scope or vocabulary change belongs in `scaffold`'s `templates.md` first.

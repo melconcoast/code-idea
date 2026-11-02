@@ -69,6 +69,9 @@ components:
 - **Lint it when you can.** `npx @google/design.md lint DESIGN.md` checks broken token references and
   WCAG contrast, and exits non-zero on an error. No `npx`, or no network? Say the lint didn't run;
   don't imply it passed.
+- **Trace to the brand.** With a `docs/brand/`, each colour row names the brand colour behind the
+  token (`accent` — the brand's [name]) and the product role it plays, and `## Overview` links
+  `docs/brand/README.md`. Logo components name their file in `docs/brand/logo/`.
 - **Match the project.** Where the project already defines tokens — CSS custom properties in an
   existing stylesheet, a theme config — `DESIGN.md` names and explains those, rather than inventing a
   parallel set the code will never use.
